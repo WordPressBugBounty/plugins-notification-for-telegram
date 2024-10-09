@@ -3,15 +3,17 @@ Contributors: rainafarai
 Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
-Tested up to: 6.4.3 
-Stable tag: /tags/3.3.1
+Tested up to: 6.6.2
+Stable tag: 3.3.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-== Description ==
+Sends notifications to Telegram users or groups, when some events occur in WordPress.
 
-The "Notification for Telegram" plugin for WordPress is a tool that allows you to send notifications and messages to a Telegram channel, group or user/s when specific events occur on your WordPress site. This plugin is useful for monitoring critical events on your site, such as new comments, new user registrations, publishing activities, New forms sent,  Woocommerce orders, cart and lowstock, Mailchimp and more, by sending notifications directly to a Telegram channel or group or user/s of your choice. It also offers a shortcode to send Telegram notifications on every page of your website or in your code.
+== Description ==
+The "Notification for Telegram" plugin for WordPress is a tool that allows you to send notifications and messages to a Telegram channel, group or user/s when specific events occur on your WordPress site.
+This plugin is useful for monitoring critical events on your site, such as new comments, new user registrations, publishing activities, New forms sent,  Woocommerce orders, cart and lowstock, Mailchimp and more, by sending notifications directly to a Telegram channel or group or user/s of your choice. It also offers a shortcode to send Telegram notifications on every page of your website or in your code.
 
 Receive Telegram messages notification when:  
 
@@ -264,6 +266,9 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+
+= 3.3.2 = 
+Fix unauthorized test message sending due to a missing capability (thx Wordfence)
 
 = 3.3.1 = 
 Added html_entity_decode to clean HTML entity

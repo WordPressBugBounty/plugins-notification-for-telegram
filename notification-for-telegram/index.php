@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.3.1
+ * Version: 3.3.2
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -22,7 +22,6 @@ $nftb_robotfile_path = plugin_dir_path( __FILE__ ) . 'include/nftb_robot.php';
 if (file_exists($nftb_robotfile_path)) {
     include($nftb_robotfile_path);
 } 
-
 
 
 function nftb_init_method() {
@@ -78,12 +77,17 @@ add_action('init', 'nftb_my_plugin_init');
 
 //add jquery to footer for TEST button
 add_action( 'admin_footer', 'nftb_test_javascript' ); // Write our JS below here
-function nftb_test_javascript() { ?>
+function nftb_test_javascript() { 
+	
+	$nonce_value = wp_create_nonce( 'nftb-test-action' );
+	
+	?>
 	<script type="text/javascript" >
 		jQuery(document).ready(function($) {
 			var data = {
 			'action': 'nftb_test_action',
-			'whatever': 1234
+			'whatever': 1234,
+			
 		};
 		
 		
@@ -131,7 +135,8 @@ function nftb_test_javascript() { ?>
 					action: 'nftb_test_action',
 					token: 'token',
 					chatids: 'chatids',
-					saysomething: saysomething
+					saysomething: saysomething,
+					security: '<?php echo esc_js( $nonce_value ); ?>',
 							},
 				cache: false,
 				success: function(dataResult){
@@ -206,6 +211,26 @@ function nftb_test_javascript() { ?>
 //Fuction to send test connection
 add_action( 'wp_ajax_nftb_test_action', 'nftb_test_action' );
 function nftb_test_action() {
+		
+
+		// WFENCE FIX
+		if ( ! current_user_can( 'administrator' ) ) {
+			exit();
+		}
+
+
+	    // start check nonce
+		if ( ! isset( $_POST['security'] ) ) {
+			wp_send_json_error( 'Nonce mancante.'.$_POST['security'] );
+			exit();
+		}
+	
+		if ( ! wp_verify_nonce( $_POST['security'], 'nftb-test-action' ) ) {
+			wp_send_json_error( 'Nonce non valido. Ricevuto: ' . $_POST['security'] );
+			exit();
+		}
+		// end nonce check
+	
 	
 	  $telegram_notify_options = get_option( 'telegram_notify_option_name' ); // Array of All Options
  	
