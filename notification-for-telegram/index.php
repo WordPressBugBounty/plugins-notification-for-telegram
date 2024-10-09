@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.3.2
+ * Version: 3.3.3
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -221,12 +221,12 @@ function nftb_test_action() {
 
 	    // start check nonce
 		if ( ! isset( $_POST['security'] ) ) {
-			wp_send_json_error( 'Nonce mancante.'.$_POST['security'] );
+		
 			exit();
 		}
 	
 		if ( ! wp_verify_nonce( $_POST['security'], 'nftb-test-action' ) ) {
-			wp_send_json_error( 'Nonce non valido. Ricevuto: ' . $_POST['security'] );
+		
 			exit();
 		}
 		// end nonce check

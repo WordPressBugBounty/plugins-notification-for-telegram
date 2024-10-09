@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.6.2
-Stable tag: 3.3.2
+Stable tag: 3.3.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -267,7 +267,7 @@ both in option page and in the shortcode.
 
 == Changelog ==
 
-= 3.3.2 = 
+= 3.3.3 = 
 Fix unauthorized test message sending due to a missing capability (thx Wordfence)
 
 = 3.3.1 = 
