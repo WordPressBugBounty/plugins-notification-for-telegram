@@ -199,8 +199,10 @@ function nftb_admin_notice() {
        
        $all_meta_for_user = get_user_meta($user_id ) ;
        
-      // delete_user_meta($user_id, 'nftb_ignore_notyyy');
-       // echo "jjj". $all_meta_for_user['nftb_ignore_notyyy'][0];
+        // SHOW ONLY to ADMINS
+        if (!current_user_can('administrator')) {
+            return;  // Esce dalla funzione se l'utente non è un amministratore
+        }
         
         
        $datetime1 = date_create(); // now
