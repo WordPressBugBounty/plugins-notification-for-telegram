@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.7.1
-Stable tag: 3.3.6
+Stable tag: 3.3.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -267,7 +267,12 @@ both in option page and in the shortcode.
 
 == Changelog ==
 
-= 3.3.4 = 
+= 3.3.7 =
+Added option to hide the "EDIT ORDER" link in the WooCommerce order confirmation message.
+Added the ability to exclude some CF7 forms by ID from notifications 
+Fixed Warning: Undefined array key “nftb_ignore_notyyy” 
+
+= 3.3.6 = 
 Restrict admin Notice ONLY for Admin 
 
 = 3.3.3 = 

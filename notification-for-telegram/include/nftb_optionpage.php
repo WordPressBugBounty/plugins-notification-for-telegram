@@ -17,13 +17,13 @@ class nftb_TelegramNotify {
 		}
 
 	//TAB2
-	if ($field == "POST" || $field == "notify_newpost" || $field == "FORMS"|| $field == "notify_cf7"|| $field == "notify_ninjaform"|| $field == "notify_wpform" || $field == "notify_ele_form" || $field == "LOGIN" || $field == "notify_newuser"   || $field == "notify_login_success" || $field == "notify_login_fail" || $field == "notify_login_fail_showpass" || $field == "notify_login_fail_goodto"  || $field == "MAILCHIMP" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_unsub" || $field == "notify_new_comments" || $field == "notify_new_comments_filter_spam" ) {
+	if ($field == "POST" || $field == "notify_newpost" || $field == "FORMS"|| $field == "notify_cf7"||$field ==  "notify_cf7_exclude" || $field == "notify_ninjaform"|| $field == "notify_wpform" || $field == "notify_ele_form" || $field == "LOGIN" || $field == "notify_newuser"   || $field == "notify_login_success" || $field == "notify_login_fail" || $field == "notify_login_fail_showpass" || $field == "notify_login_fail_goodto"  || $field == "MAILCHIMP" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_unsub" || $field == "notify_new_comments" || $field == "notify_new_comments_filter_spam" ) {
 		$prefname = "telegram_notify_option_name_tab2";
 	}	
 
 	
 	//TAB3
-	if ($field == "ORDERS" || $field == "notify_woocomerce_order" || $field == "order_trigger" || $field == "price_with_tax" || $field == "hide_bill"|| $field == "hide_ship" || $field == "hide_phone" || $field == "WOO PREFERENCES"  || $field == "notify_woocomerce_checkoutfield" || $field == "notify_woocomerce_checkoutext" || $field == "notify_woocomerce_order_change"  || $field == "notify_woocomerce_addtocart_item" || $field == "notify_woocomerce_remove_cart_item" ) {
+	if ($field == "ORDERS" || $field == "notify_woocomerce_order" || $field == "order_trigger" || $field == "price_with_tax" || $field == "hide_bill"|| $field == "hide_ship" || $field == "hide_phone" || $field == "WOO PREFERENCES"  || $field == "notify_woocomerce_checkoutfield" || $field == "notify_woocomerce_checkoutext" || $field == "notify_woocomerce_order_change"  || $field == "notify_woocomerce_addtocart_item" || $field == "notify_woocomerce_remove_cart_item" || $field == "hide_edit_link" ) {
 		$prefname = "telegram_notify_option_name_tab3"; }
 
 	
@@ -349,6 +349,15 @@ class nftb_TelegramNotify {
 			'telegram-notify-admin_tab2', // page
 			'telegram_notify_setting_section_tab2' // section
 		);
+
+	
+		add_settings_field(
+			'notify_cf7_exclude', // id
+			__(  'Exclude CF7 forms' , 'notification-for-telegram' ), // title
+			array( $this, 'notify_cf7_exclude_callback' ), // callback
+			'telegram-notify-admin_tab2', // page
+			'telegram_notify_setting_section_tab2' // section
+		);
 		
 		
 		add_settings_field(
@@ -620,6 +629,14 @@ class nftb_TelegramNotify {
 			'telegram-notify-admin_tab3', // page
 			'telegram_notify_setting_section_tab3' // section
 		);
+
+		add_settings_field(
+			'hide_edit_link', // id
+			__( 'Hide Order Edit Link' , 'notification-for-telegram' ), // title
+			array( $this, 'hide_edit_link_callback' ), // callback
+			'telegram-notify-admin_tab3', // page
+			'telegram_notify_setting_section_tab3' // section
+		);
 		
 		
 		//FINE TAB3
@@ -702,6 +719,11 @@ class nftb_TelegramNotify {
 
 		if ( isset( $input['notify_cf7'] ) ) {
 			$sanitary_values['notify_cf7'] = $input['notify_cf7'];
+		}
+
+
+		if ( isset( $input['notify_cf7_exclude'] ) ) {
+			$sanitary_values['notify_cf7_exclude'] = $input['notify_cf7_exclude'];
 		}
 		
 		if ( isset( $input['notify_wpform'] ) ) {
@@ -817,6 +839,11 @@ class nftb_TelegramNotify {
 
 		if ( isset( $input['notify_woocomerce_remove_cart_item'] ) ) {
 			$sanitary_values['notify_woocomerce_remove_cart_item'] = $input['notify_woocomerce_remove_cart_item'];
+		}
+
+
+		if ( isset( $input['hide_edit_link'] ) ) {
+			$sanitary_values['hide_edit_link'] = $input['hide_edit_link'];
 		}
 		
 		if ( isset( $input['notify_update'] ) ) {
@@ -935,12 +962,80 @@ public function saysomething_callback() {
 		);
 		
 		if ( is_plugin_active('contact-form-7/wp-contact-form-7.php') ) {
-		 ?><script>document.getElementById("notify_cf7").enable = true;</script><?php
-			} else { ?><script>document.getElementById("notify_cf7").disabled = true;document.querySelector("label[for=notify_cf7]").innerHTML = "<?php _e('Plug not Active or Installed' , 'notification-for-telegram' ) ?>";</script><?php
+			?>
+			<script>
+				document.getElementById("notify_cf7").addEventListener("change", function() {
+					var excludeField = document.getElementById("notify_cf7_exclude");
+					var excludeLabel = document.querySelector("label[for=notify_cf7_exclude]");
+					if (this.checked) {
+						excludeField.style.display = "block"; // Mostra il campo di esclusione
+					} else {
+						excludeField.style.display = "none"; // Nascondi il campo di esclusione
+					}
+				});
+				
+				// Verifica se il checkbox è già selezionato al momento del caricamento della pagina
+				window.addEventListener('load', function() {
+					var notifyCf7 = document.getElementById("notify_cf7");
+					var excludeField = document.getElementById("notify_cf7_exclude");
+					if (notifyCf7.checked) {
+						excludeField.style.display = "block"; // Mostra il campo di esclusione se il checkbox è selezionato
+					} else {
+						excludeField.style.display = "none"; // Nascondi il campo di esclusione se il checkbox è deselezionato
+					}
+				});
+			</script>
+			<?php
+		} else {
+			?>
+			<script>
+				document.getElementById("notify_cf7").disabled = true;
+				document.querySelector("label[for=notify_cf7]").innerHTML = "<?php _e('Plugin not Active or Installed', 'notification-for-telegram') ?>";
+			</script>
+			<?php
 		}
 		 	
 	}
 	
+	public function notify_cf7_exclude_callback() {
+		printf(
+			'<label for="notify_cf7_exclude">'.__('Enter the IDs (post) of the Contact Form 7 forms you want to exclude from notifications, separated by commas. ', 'notification-for-telegram').'</label>
+			<input type="text" name="telegram_notify_option_name_tab2[notify_cf7_exclude]" id="notify_cf7_exclude" value="%s" class="regular-text">',
+			isset($this->telegram_notify_options_tab2['notify_cf7_exclude']) ? esc_attr($this->telegram_notify_options_tab2['notify_cf7_exclude']) : ''
+		);
+	
+		// Controlla se il plugin CF7 è attivo
+		if ( is_plugin_active('contact-form-7/wp-contact-form-7.php') ) {
+			echo '<script>document.getElementById("notify_cf7_exclude").disabled = false;</script>';
+		} else {
+			echo '<script>document.getElementById("notify_cf7_exclude").disabled = true; document.querySelector("label[for=notify_cf7_exclude]").innerHTML = "'. __('Plugin not Active or Installed', 'notification-for-telegram') .'";</script>';
+		}
+	
+		// Aggiungi il controllo per nascondere/mostrare la riga in base alla checkbox notify_cf7
+		?>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				var cf7Checkbox = document.getElementById('notify_cf7'); // La checkbox 'notify_cf7'
+				var cf7ExcludeField = document.getElementById('notify_cf7_exclude'); // Il campo di esclusione
+	
+				// Funzione per abilitare/disabilitare la visibilità del campo
+				function toggleCf7ExcludeField() {
+					if (cf7Checkbox.checked) {
+						cf7ExcludeField.closest('tr').style.display = ''; // Mostra la riga
+					} else {
+						cf7ExcludeField.closest('tr').style.display = 'none'; // Nascondi la riga
+					}
+				}
+	
+				// Inizializza la visibilità della riga in base allo stato della checkbox
+				toggleCf7ExcludeField();
+	
+				// Aggiungi l'evento di cambio stato della checkbox
+				cf7Checkbox.addEventListener('change', toggleCf7ExcludeField);
+			});
+		</script>
+		<?php
+	}
 	
 	
 	public function notify_ninjaform_callback() {
@@ -1347,6 +1442,20 @@ public function notify_woocomerce_checkoutext_callback() {
 			} else { ?><script>document.getElementById("notify_woocomerce_remove_cart_item").disabled = true;document.querySelector("label[for=notify_woocomerce_remove_cart_item]").innerHTML = ".<?php _e('Plug not Active or Installed' , 'notification-for-telegram' ) ?>";</script><?php
 		} 
 		
+		
+	}
+
+
+	public function hide_edit_link_callback() {
+		printf(
+			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_edit_link]" id="hide_edit_link" value="hide_edit_link" %s><span class="slider"></span>
+</label><label for="hide_edit_link">'.__('hide the EDIT ORDER link in the WooCommerce order confirmation message ' , 'notification-for-telegram' ).'</label>',
+			( isset( $this->telegram_notify_options_tab3['hide_edit_link'] ) && $this->telegram_notify_options_tab3['hide_edit_link'] === 'hide_edit_link' ) ? 'checked' : ''
+		);
+		if ( is_plugin_active('woocommerce/woocommerce.php') ) {
+		 ?><script>document.getElementById("hide_edit_link").enable = true;</script><?php
+			} else { ?><script>document.getElementById("hide_edit_link").disabled = true;document.querySelector("label[for=hide_edit_link]").innerHTML = "<?php _e('Plug not Active or Installed' , 'notification-for-telegram' ) ?>";</script><?php
+		}
 		
 	}
 

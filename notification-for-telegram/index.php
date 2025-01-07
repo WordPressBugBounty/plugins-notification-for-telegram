@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.3.6
+ * Version: 3.3.7
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -391,7 +391,21 @@ $TelegramNotify2 = new nftb_TelegramNotify();
 	$wpcf = WPCF7_ContactForm::get_current();
 	$submission = WPCF7_Submission::get_instance();
 	$posted_data = $submission->get_posted_data();
-	
+	$form_id = $cf7->id(); 
+	// Ottieni la lista dei form ID esclusi dalla configurazione
+    $excluded_forms = $TelegramNotify2->getValuefromconfig('notify_cf7_exclude');
+
+    // Se i form esclusi sono presenti, separa gli ID in un array
+    if (!empty($excluded_forms)) {
+        $excluded_forms_array = array_map('trim', explode(',', $excluded_forms)); // Rimuove gli spazi e divide per virgola
+    } else {
+        $excluded_forms_array = [];
+    }
+
+    // Se l'ID del modulo è nella lista degli esclusi, esci dalla funzione
+    if (in_array($form_id, $excluded_forms_array)) {
+        return; // Esci dalla funzione
+    }
 
 	$dumpone = $debug = var_export($posted_data, true);
 	 //$dumpone = var_dump($dumpone);
@@ -421,6 +435,8 @@ $TelegramNotify2 = new nftb_TelegramNotify();
 
 
 	}
+	
+	
 
 
         //nftb_send_teleg_message("NEW Form ".$bloginfo." from :".$posted_data["your-name"]." VarDump:".$dumpone."\r\n \r\n ".$dindo);
@@ -724,12 +740,26 @@ if (has_filter('nftb_order_footer_message_hook')) {
   //  $defmessage = $defmessage . "\r\n". get_admin_url( null, 'post.php?post='.$order_id.'&action=edit', 'http' );
     $editurl = get_admin_url( null, 'post.php?post='.$order_id.'&action=edit', 'http' ); 
    
-    // nftb_send_teleg_message( $defmessage);
-//switch doub 
 
- nftb_send_teleg_message( $defmessage, 'EDIT ORDER N. '.$order_id ,$editurl,'');
- //$defmessage $eventualechtid, $urlname, $urllink)
-	  add_option('nftb_new_order_id_for_notification_'.$order_id,'notify' );
+	$hide_edit_button = "";
+	$hide_edit_button = $TelegramNotify2->getValuefromconfig('hide_edit_link');
+
+
+
+
+
+
+
+	if ($hide_edit_button) {
+		//nasconde il link edit nel messaggio
+		nftb_send_teleg_message($defmessage);
+		
+		
+	} else {
+		nftb_send_teleg_message( $defmessage, 'EDIT ORDER N. '.$order_id ,$editurl,'');
+	}
+
+	add_option('nftb_new_order_id_for_notification_'.$order_id,'notify' );
    
   
    
