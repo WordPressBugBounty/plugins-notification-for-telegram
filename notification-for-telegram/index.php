@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.3.7
+ * Version: 3.3.9
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 include( plugin_dir_path( __FILE__ ) . 'include/tnfunction.php');
+include( plugin_dir_path( __FILE__ ) . 'include/update_function.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftncron.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftb_optionpage.php');
 
@@ -759,8 +760,12 @@ if (has_filter('nftb_order_footer_message_hook')) {
 		nftb_send_teleg_message( $defmessage, 'EDIT ORDER N. '.$order_id ,$editurl,'');
 	}
 
-	add_option('nftb_new_order_id_for_notification_'.$order_id,'notify' );
-   
+	
+	add_option('nftb_new_order_id_for_notification_' . $order_id, 'notify', '', false );
+	
+	//controlla se nel db ci sono nftb_new_order_id_for_notification_ su AUTOLOAD ON e nel caso FIXALI avvine una volta sola
+	nftb_optimize_nftb_plugin_database();
+	
   
    
 }
@@ -1222,33 +1227,41 @@ function nftb_my_core_updated_successfully(){
 }
   
 
-//NINJA FORM  
-add_filter( 'ninja_forms_submit_data', 'nftb_my_ninja_forms_submit_data' );
-function nftb_my_ninja_forms_submit_data( $form_data ) {
 
-$TelegramNotify2 = new nftb_TelegramNotify();
-	if ($TelegramNotify2->getValuefromconfig('notify_ninjaform') && is_plugin_active('ninja-forms/ninja-forms.php') ) {
 
- 	$form_fields   =  $form_data[ 'fields' ];
-	foreach ($form_fields as $field) {
-		$field_id    = $field[ 'id' ];
-		$field_key   = $field[ 'key' ];
-		$field_value = $field[ 'value' ];
+//NINJA FORM FIX  FOR PHP >8
+add_filter('ninja_forms_submit_data', 'nftb_my_ninja_forms_submit_data');
 
-		if( !empty($field_value) && !is_array($field_value)   ){ 
-				$arr = explode("_", $field_key);
-				$firstfield_key = $arr[0];
-				$message = $message." - ".$firstfield_key. " : ".$field_value;
-     
-    	 }
-     
-	}
-$form_settings = $form_data[ 'settings' ]; // Form settings.
-$extra_data = $form_data[ 'extra' ]; // Extra data included with the submission.
-$bloginfo = get_bloginfo( 'name' );
-$dumpone =  var_export($form_data, true);
-nftb_send_teleg_message("NEW Form ".$bloginfo." from : VarDump:".$message );
-	}
+function nftb_my_ninja_forms_submit_data($form_data) {
+    $TelegramNotify2 = new nftb_TelegramNotify();
+    
+    // Check if the Telegram notification is enabled
+    if ($TelegramNotify2->getValuefromconfig('notify_ninjaform') && is_plugin_active('ninja-forms/ninja-forms.php')) {
+        $form_fields = $form_data['fields'];
+        $message = ''; // Initialize message variable
+
+        foreach ($form_fields as $field) {
+            $field_id = $field['id'];
+            $field_key = $field['key'];
+            $field_value = $field['value'];
+
+            // Check if field value is not empty and is not an array
+            if (!empty($field_value) && !is_array($field_value)) {
+                $arr = explode("_", $field_key);
+                $firstfield_key = $arr[0];
+                $message .= " - " . $firstfield_key . " : " . $field_value. "\r\n";
+            }
+        }
+
+        $form_settings = $form_data['settings']; // Form settings
+        $extra_data = !empty($form_data['extra']) ? $form_data['extra'] : []; // Ensure extra data is an array
+        $bloginfo = get_bloginfo('name');
+
+        // Send the message to Telegram
+        nftb_send_teleg_message("NEW Form " . $bloginfo . "\r\n" . $message);
+    }
+
+    return $form_data; // Always return the modified form data
 }
 
 

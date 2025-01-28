@@ -4,8 +4,8 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.7.1
-Stable tag: 3.3.7
-Requires PHP: 7.4
+Stable tag: 3.3.9
+Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -267,73 +267,78 @@ both in option page and in the shortcode.
 
 == Changelog ==
 
+= 3.3.9 =
+- Fix nftb_new_order_id_for_notification_ ( flag to understand if the order notification is already sent) 
+in wp_options autoload to "Off" to save memory on sites with many orders.
+- Added a check to modify the existing options in wp_options to "off".
+- Fix Uncaught TypeError: array_merge():  Ninja Forms (3.8.17 and 3.8.23 ) PHP > 8 thx @scratchycat
+
 = 3.3.7 =
-Added option to hide the "EDIT ORDER" link in the WooCommerce order confirmation message.
-Added the ability to exclude some CF7 forms by ID from notifications 
-Fixed Warning: Undefined array key “nftb_ignore_notyyy” 
+- Added option to hide the "EDIT ORDER" link in the WooCommerce order confirmation message.
+- Added the ability to exclude some CF7 forms by ID from notifications 
+- Fixed Warning: Undefined array key “nftb_ignore_notyyy” 
 
 = 3.3.6 = 
-Restrict admin Notice ONLY for Admin 
-
+- Restrict admin Notice ONLY for Admin 
+ 
 = 3.3.3 = 
-Fix unauthorized test message sending due to a missing capability (thx Wordfence)
+- Fix unauthorized test message sending due to a missing capability (thx Wordfence)
 
 = 3.3.1 = 
-Added html_entity_decode to clean HTML entity
-fix check if user is set before apply_filters('nftb_login_notification') 
-Fix in user login sometimes the userdata was empty
-Fix Warning: Undefined array key "notify_update" "notify_update_time" php > 8 
+- Added html_entity_decode to clean HTML entity
+- fix check if user is set before apply_filters('nftb_login_notification') 
+- Fix in user login sometimes the userdata was empty
+- Fix Warning: Undefined array key "notify_update" "notify_update_time" php > 8 
 
 = 3.3 = 
-Fix on  apply_filters('nftb_existing_user_* return empty if not set
-Added User Role info in the message when a registered user fails to login
-Added Spam Filter on comment. If enabled you will not receive notification if comment is marked as spam
+- Fix on  apply_filters('nftb_existing_user_* return empty if not set
+- Added User Role info in the message when a registered user fails to login
+- Added Spam Filter on comment. If enabled you will not receive notification if comment is marked as spam
 
 
 = 3.2 = 
-Fix: "Wc order change status" was triggering the comment notification remove order_shop post type.
-Small fixes on user message formatting CR 
-Removed all the calls to Extarnal plugin activator & link to webpage
+- Fix: "Wc order change status" was triggering the comment notification remove order_shop post type.
+- Small fixes on user message formatting CR 
+- Removed all the calls to Extarnal plugin activator & link to webpage
 
 
 = 3.1 =
-Added notification for new comment 
+- Added notification for new comment 
 
 = 3.0 =
-Added Succes User Login notification 
-Added donation link to block the random message "Im really happy you are using my plugin !!".
-Added a notification for removed products from cart.
-Added Customer Order Note from Wc checkout page.
-Added Option "Do not Remove <html tags> from the telegram messages".
-Added IP address for any User Login Notification not just the map
-Fix Enable notifications when user login fails.
+- Added Succes User Login notification 
+- Added donation link to block the random message "Im really happy you are using my plugin !!".
+- Added a notification for removed products from cart.
+- Added Customer Order Note from Wc checkout page.
+- Added Option "Do not Remove <html tags> from the telegram messages".
+- Added IP address for any User Login Notification not just the map
+- Fix Enable notifications when user login fails.
 
-
-Added 4 REAL WOOCOMERCE notification HOOKS : nftb_order_product_line_hook, nftb_order_header_message_hook, nftb_order_before_items_hook,
+- Added 4 REAL WOOCOMERCE notification HOOKS : nftb_order_product_line_hook, nftb_order_header_message_hook, nftb_order_before_items_hook,
 nftb_order_after_items_hook, nftb_order_footer_message_hook .
 
-Addes 4 REAL USER LOGIN notification HOOKS 
+- Added 4 REAL USER LOGIN notification HOOKS 
 nftb_login_notification, nftb_user_registered_notification , nftb_existing_user_fails_login_notification, nftb_unknown_user_fails_login_notification
 
-Added $item to the function -> nftb_order_product_line($product_id,$item); (wsjrcatarri request)
+- Added $item to the function -> nftb_order_product_line($product_id,$item); (wsjrcatarri request)
 
 
 
 = 2.9 =
-Added Support for Elementor Form
-User Login notification new Layout more clear 
-Fix Function get_userdatabylogin (deprecated) on User login 
-Better Jquery validations ( token and chatids ) on config page
+- Added Support for Elementor Form
+- User Login notification new Layout more clear 
+- Fix Function get_userdatabylogin (deprecated) on User login 
+- Better Jquery validations ( token and chatids ) on config page
 
 = 2.8 =
-Fixed Shortcode 
+- Fixed Shortcode 
 
 = 2.7 =
-Fixed Many Notice on woocommerce order confirmation Thankyou page. 
-Added customer total orders number in order confirmation message.
+- Fixed Many Notice on woocommerce order confirmation Thankyou page. 
+- Added customer total orders number in order confirmation message.
 
 = 2.6 =
-Added Customer Phone Number in order message (Everybody Asking :=) )
+- Added Customer Phone Number in order message (Everybody Asking :=) )
 
 = 2.5 =
 - Formatted fields for CF7 Contact Form no more Var_dump()
@@ -356,34 +361,33 @@ Added Customer Phone Number in order message (Everybody Asking :=) )
 - Fixed activation notice error 
 
 = 2.0 =
-New Backend UserGUI Tab division for better User Experience
-Full fields Order Notification (Items shipment, billing, is paid?, and many order details)
-Low Stock Product Enable notifications when a product is low stock conditions.
-Create a input field in wc check-out page for Telegram nickname.
-Say function to speak to make the bot say Something to the people
-MC4WP Mailchimp for WordPress plugin integration send a notification when new user subscribes to mailchimp or unsubscribes
-Cron message Setup a Cron job to keep updated about Plugins & Core Update 
-Added Emoji to messages
+- New Backend UserGUI Tab division for better User Experience
+- Full fields Order Notification (Items shipment, billing, is paid?, and many order details)
+- Low Stock Product Enable notifications when a product is low stock conditions.
+- Create a input field in wc check-out page for Telegram nickname.
+- Say function to speak to make the bot say Something to the people
+- MC4WP Mailchimp for WordPress plugin integration send a notification when new user subscribes to mailchimp or unsubscribes
+- Cron message Setup a Cron job to keep updated about Plugins & Core Update 
+- Added Emoji to messages
 
 = 1.6 =
-now you can enable a new field in Woocommerce checkout page let customers add his telegram nickname
+- now you can enable a new field in Woocommerce checkout page let customers add his telegram nickname
 
 = 1.4 = 
-Fix new order received and Order status change
-No duplication now !!
+- Fix new order received and Order status change No duplication now !!
 
 = 1.3 =
-Fix message text in shortcode was blank before
+- Fix message text in shortcode was blank before
 
 
 = 1.2 =
-Add new option on woocommerce notification : only on new orders or on any order status change
+- Add new option on woocommerce notification : only on new orders or on any order status change
 
 = 1.1 =
-add icons
+- add icons
 
 = 1.0 =
-Initial release
+- Initial release
 
 
 
