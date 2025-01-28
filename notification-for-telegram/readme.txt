@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.7.1
-Stable tag: 3.3.9
+Stable tag: 3.4
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -267,7 +267,7 @@ both in option page and in the shortcode.
 
 == Changelog ==
 
-= 3.3.9 =
+= 3.4 =
 - Fix nftb_new_order_id_for_notification_ ( flag to understand if the order notification is already sent) 
 in wp_options autoload to "Off" to save memory on sites with many orders.
 - Added a check to modify the existing options in wp_options to "off".
