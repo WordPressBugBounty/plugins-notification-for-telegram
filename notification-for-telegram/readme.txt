@@ -3,7 +3,7 @@ Contributors: rainafarai
 Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
-Tested up to: 6.7.1
+Tested up to: 6.8.1
 Stable tag: 3.4
 Requires PHP: 7.4 
 License: GPLv2 or later
@@ -13,11 +13,11 @@ Sends notifications to Telegram users or groups, when some events occur in WordP
 
 == Description ==
 The "Notification for Telegram" plugin for WordPress is a tool that allows you to send notifications and messages to a Telegram channel, group or user/s when specific events occur on your WordPress site.
-This plugin is useful for monitoring critical events on your site, such as new comments, new user registrations, publishing activities, New forms sent,  Woocommerce orders, cart and lowstock, Mailchimp and more, by sending notifications directly to a Telegram channel or group or user/s of your choice. It also offers a shortcode to send Telegram notifications on every page of your website or in your code.
+This plugin is useful for monitoring critical events on your site, such as new comments, new user registrations, publishing activities, New forms sent,Woocommerce and Surecart orders, cart and lowstock, Mailchimp and more, by sending notifications directly to a Telegram channel or group or user/s of your choice. It also offers a shortcode to send Telegram notifications on every page of your website or in your code.
 
 Receive Telegram messages notification when:  
 
- 
+* When receive a new order in Surecart. 
 * When receive a new order in Woocommerce.
 * When a Woocommerce order change status.
 * New field in Woocommerce checkout page let customers add the own telegram nickname
@@ -51,6 +51,12 @@ Once You got the 2 fields save the configuration and try the "TEST" button .. yo
 
 this plugin is relying on a 3rd party service to geolocate the Ip address https://ip-api.com/
 https://ip-api.com/docs/legal  to see the services’ a terms of use and/or privacy policies
+
+
+MESSAGES TRANSLATION
+To translate Telegram messages, use WPML or Loco Translate. All notification strings are now translatable.
+Go to Loco Translate → Plugins → Notification for Telegram to add your translations.
+For WPML, ensure String Translation is enabled to modify notification texts.
 
 
 SHORTCODE EXAMPLE
@@ -266,6 +272,11 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+
+= 3.4.1 =
+- Added order support for Surecart
+- Support for translating Telegram messages using WPML and Loco Translate. 
+Now all notification messages can be fully localized
 
 = 3.4 =
 - Fix nftb_new_order_id_for_notification_ ( flag to understand if the order notification is already sent) 

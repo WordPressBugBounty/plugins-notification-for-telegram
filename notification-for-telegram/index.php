@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4
+ * Version: 3.4.1
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -258,14 +258,12 @@ function nftb_test_action() {
 
 
 
- if( ( $saysomething ) ) {
- 
- $testmessage = "\xF0\x9F\x93\xA3 Message from ". $bloginfo.": ".$saysomething;
-}else {
-
-$testmessage = ("\xF0\x9F\x9A\x80 WOW IT WORKS on ".$bloginfo);
-
-}
+	if ( $saysomething ) { 
+		$testmessage = "\xF0\x9F\x93\xA3 " . __("Message from ", "notification-for-telegram") . $bloginfo . ": " . $saysomething;
+	} else { 
+		$testmessage = "\xF0\x9F\x9A\x80 " . __("WOW IT WORKS on ", "notification-for-telegram") . $bloginfo;
+	}
+	
 
 	
 	foreach ($users as $user)
@@ -314,8 +312,9 @@ function nftb_send_new_post($new_status, $old_status, $post) {
     // Do something!
  
    			 update_post_meta($post_id, 'votes_count', '0');
-    		 $messaggio = 'New '.$post->post_type.' on '.$bloginfo.' by user '. $display_name . ' : '.$TTiltle;
-  			
+    		 //$messaggio = 'New '.$post->post_type.' on '.$bloginfo.' by user '. $display_name . ' : '.$TTiltle;
+			 $messaggio = __( 'New', 'notification-for-telegram') . ' ' . $post->post_type . ' ' . __( 'on', 'notification-for-telegram') . ' ' . $bloginfo . ' ' . __( 'by user', 'notification-for-telegram') . ' ' . $display_name . ' : ' . $TTiltle;
+
   			nftb_send_teleg_message($messaggio);
   			
   			
@@ -326,8 +325,8 @@ function nftb_send_new_post($new_status, $old_status, $post) {
     // Do something!
  
    			 update_post_meta($post_id, 'votes_count', '0');
-    		 $messaggio = 'New revision  '.$post->post_type.' on '.$bloginfo.' by user '. $display_name . ' : '.$TTiltle;
-  			
+				$messaggio = __( 'New revision', 'notification-for-telegram') . ' ' . $post->post_type . ' ' . __( 'on', 'notification-for-telegram') . ' ' . $bloginfo . ' ' . __( 'by user', 'notification-for-telegram') . ' ' . $display_name . ' : ' . $TTiltle;
+
   			//nftb_send_teleg_message($messaggio);
   			nftb_send_teleg_message($messaggio,'EDIT POST' ,$posturl,'');
   			
@@ -339,7 +338,8 @@ function nftb_send_new_post($new_status, $old_status, $post) {
     // Do something!
  
    			 update_post_meta($post_id, 'votes_count', '0');
-    		 $messaggio = 'Published new '.$post->post_type.' on '.$bloginfo.' by user '. $display_name . ' : '.$TTiltle;
+			$messaggio = __( 'Published new', 'notification-for-telegram') . ' ' . $post->post_type . ' ' . __( 'on', 'notification-for-telegram') . ' ' . $bloginfo . ' ' . __( 'by user', 'notification-for-telegram') . ' ' . $display_name . ' : ' . $TTiltle;
+
   			
   			nftb_send_teleg_message($messaggio,'EDIT POST' ,$posturl,'');
   			
@@ -367,7 +367,7 @@ $TelegramNotify2 = new nftb_TelegramNotify();
         // Do whatever you need
     }
     
-    nftb_send_teleg_message( "NEW Form Wpform".$bloginfo."\r\n ".$defmessage, '','');
+    nftb_send_teleg_message( "NEW Wpform".$bloginfo."\r\n ".$defmessage, '','');
     return true;
      } //
 
@@ -441,7 +441,7 @@ $TelegramNotify2 = new nftb_TelegramNotify();
 
 
         //nftb_send_teleg_message("NEW Form ".$bloginfo." from :".$posted_data["your-name"]." VarDump:".$dumpone."\r\n \r\n ".$dindo);
-       nftb_send_teleg_message("NEW Form ".$bloginfo." from : ".$posted_data["your-name"]."\r\n \r\n ".$dindo);
+       nftb_send_teleg_message("New Contact Form ".$bloginfo." from : ".$posted_data["your-name"]."\r\n \r\n ".$dindo);
        
        //Stop mail in debug 
        // add_filter('wpcf7_skip_mail', 'nftb_abort_mail_sending');     
@@ -487,293 +487,504 @@ add_action( 'woocommerce_payment_complete', 'nftb_detect_new_order_on_checkout' 
 
 
 
- 
 
-function nftb_detect_new_order_on_checkout($order_id) {
-     $TelegramNotify2 = new nftb_TelegramNotify();
+
+function nftb_detect_new_order_on_checkout($order_id)
+{
+	$TelegramNotify2 = new nftb_TelegramNotify();
+
+	if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_order')) {
+
+		$order = wc_get_order($order_id);
+		$bloginfo = get_bloginfo('name');
+
+		if ($order) {
+			$defmessage = "";
+			$total =  $order->get_total();
+			$id = $order->get_id();
+			$first_name =  $order->get_billing_first_name();
+			$last_name = $order->get_billing_last_name();
+			$shipping_city =	$order->get_shipping_city();
+			$shipping_state = $order->get_shipping_country();
+			$pagamento = $order->get_payment_method_title();
+			$billing_email = $order->get_billing_email();
+			$order_date = $order->get_date_created();
+			$order_date2 = $order->get_date_created()->format('j F Y, g:i a');
+			$order_telegram =   get_post_meta($id, 'Telegram', true);
+			$order_status = $order->get_status();
+			$currency_code = $order->get_currency();
+			$currency_symbol = get_woocommerce_currency_symbol($currency_code);
+			$order_notes = $order->get_customer_note();
+
+			$shipline = __('SHIP TO:', 'notification-for-telegram') . "\r\n" .
+			$order->get_shipping_first_name() . " " . $order->get_shipping_last_name() . "\r\n" .
+			__('Company:', 'notification-for-telegram') . " " . $order->get_shipping_company() . "\r\n";
+			$shipline .= __('Address:', 'notification-for-telegram') . " " . $order->get_shipping_address_1() . " " . $order->get_shipping_address_2() . "\r\n";
+			$shipline .= __('City:', 'notification-for-telegram') . " " . $order->get_shipping_city() . "\r\n" .
+			__('State:', 'notification-for-telegram') . " " . $order->get_shipping_state() . "\r\n" .
+			$order->get_shipping_postcode() . "\r\n" . $order->get_shipping_country();
+
+			$billingline = __('BILL TO:', 'notification-for-telegram') . "\r\n" .
+			$order->get_billing_first_name() . " " . $order->get_billing_last_name() . "\r\n" .
+			__('Company:', 'notification-for-telegram') . " " . $order->get_billing_company() . "\r\n";
+			$billingline .= __('Address:', 'notification-for-telegram') . " " . $order->get_billing_address_1() . " " . $order->get_billing_address_2() . "\r\n";
+			$billingline .= __('City:', 'notification-for-telegram') . " " . $order->get_billing_city() . "\r\n" .
+			__('State:', 'notification-for-telegram') . " " . $order->get_billing_state() . "\r\n" .
+			$order->get_billing_postcode() . "\r\n" . $order->get_billing_country();
+
+
+			global  $woocommerce;
+
+			if ($order->is_paid()) {
+				$paid = __('Order Paid', 'notification-for-telegram');
+			} else {
+				$paid = __('Order NOT Paid', 'notification-for-telegram');
+			}
+			
+
+
+			get_woocommerce_currency_symbol();
+			$linea = "";
+
+			foreach ($order->get_items() as $item_id => $item) {
+				$extrafiledhook = "";
+				$lineatemp = "";
+				//Get the product ID        
+				$product_id = $item->get_product_id();
+				// Get the WC_Product object         
+				$product = $item->get_product();
+				$product_sku    = $product->get_sku();
+				$description = get_post($item['product_id'])->post_content;
+				// Name of the product
+				$item_name    = $item->get_name();
+				$quantity     = $item->get_quantity();
+				$tax_class    = $item->get_tax_class();
+				// Line subtotal (non discounted)       
+				$line_subtotal     = $item->get_subtotal();
+				// Line subtotal tax (non discounted)      
+				$line_subtotal_tax = $item->get_subtotal_tax();
+				// Line total (discounted)     
+				$line_total        = $item->get_total();
+				// Line total tax (discounted)        
+				$line_total_tax    = $item->get_total_tax();
+
+
+				if (function_exists('nftb_order_product_line')) {
+
+
+					$extrafiledhook = $extrafiledhook . nftb_order_product_line($product_id, $item);
+
+					$defmessage = $defmessage . "\r\n";
+				}
+
+
+				//se checcato aggiungi tasse
+				if ($TelegramNotify2->getValuefromconfig('price_with_tax')) {
+
+					$line_total = wc_round_tax_total($item->get_total()) + wc_round_tax_total($item->get_total_tax()); // Discounted total with tax
+				}
+
+				$lineatemp = $lineatemp . $quantity . " x " . $item_name . " - " . $line_total . " " . $currency_code . $extrafiledhook;
+
+				$nftb_order_product_line_hook = apply_filters('nftb_order_product_line_hook',  $lineatemp, $product_id, $item);
+
+				if (has_filter('nftb_order_product_line_hook')) {
+					$linea = $linea . $nftb_order_product_line_hook;
+				} else {
+					$linea = $linea . $lineatemp . "\r\n";
+				}
+			}
+
+
+
+			$telegraminmessage = "";
+			// add @ if not present 
+			if (!empty($order_telegram)) {
+
+				if (strpos($order_telegram, '@') !== false) {
+				} else {
+					$order_telegram = "@" . $order_telegram;
+				}
+				$telegraminmessage = "\r\n" . __('Telegram user:', 'notification-for-telegram') . " " . $order_telegram;
+
+			}
+
+			$phoneline = get_order_phone($order_id);
+
+
+			$nftb_order_header_message_hook = apply_filters('nftb_order_header_message_hook', $order_id);
+			if (has_filter('nftb_order_header_message_hook')) {
+				$defmessage = $defmessage . $nftb_order_header_message_hook;
+			}
+
+
+			$defmessage = "\xE2\x9C\x8C " . esc_html__('New order', 'notification-for-telegram') . " " . $id . " " . esc_html__('on', 'notification-for-telegram') . " " . $bloginfo . " \xE2\x9C\x8C\r\n";
+			$defmessage .= "\xF0\x9F\x91\x89 " . $first_name . " " . $last_name . ", " . $billing_email . "\r\n";
+			$defmessage .= "\xF0\x9F\x92\xB0 " . $total . " " . $currency_code . "\r\n";
+			$defmessage .= esc_html__($paid, 'notification-for-telegram') . " (" . esc_html__($pagamento, 'notification-for-telegram') . ") \r\n";
+			$defmessage .= esc_html__('Order Status', 'notification-for-telegram') . ": " . $order_status . "\r\n";
+			$defmessage .= esc_html__('Order Date', 'notification-for-telegram') . ": " . $order_date2;
+
+
+			$defmessage = $defmessage . $telegraminmessage;
+
+			if ($TelegramNotify2->getValuefromconfig('hide_phone')) {
+				$defmessage = $defmessage . trim($phoneline, " ");
+			}
+
+			$current_user = wp_get_current_user();
+
+			if ($current_user instanceof WP_User && $current_user->ID) {
+				$customer_id = $current_user->ID;
+
+				// Ottieni tutti gli ordini associati al cliente
+				$customer_orders = wc_get_orders([
+					'customer' => $customer_id,
+				]);
+				$order_count = '';
+				$completed_order_count = 0;
+
+				// Filtra gli ordini completati
+				foreach ($customer_orders as $order) {
+					if ($order->get_status() === 'completed') {
+						$completed_order_count++;
+					}
+				}
+
+				$order_count = "\xF0\x9F\x94\xA2 " . __('Completed order count:', 'notification-for-telegram') . " " . $completed_order_count . "\r\n";
+
+			}
+
+
+
+
+			$defmessage = $defmessage . $order_count;
+
+			//retrocompatibilta per vecchia funziome
+			if (function_exists('nftb_order_before_items')) {
+
+				$defmessage = $defmessage . "\r\n";
+				$defmessage = $defmessage . nftb_order_before_items($order_id);
+				$defmessage = $defmessage . "\r\n";
+			}
+
+			// HOOKS nftb_order_before_items_hook
+			$nftb_order_before_items_hook = apply_filters('nftb_order_before_items_hook', $order_id);
+			if (has_filter('nftb_order_before_items_hook')) {
+				$defmessage = $defmessage . $nftb_order_before_items_hook;
+			}
+
+
+
+
+			$defmessage .= "\r\n\r\n------ " . __('ITEMS', 'notification-for-telegram') . " ------\r\n";
+
+			$defmessage = $defmessage . $linea;
+			$defmessage = $defmessage . "-------------------";
+
+
+			//retrocompatibilta per vecchia funziome
+			if (function_exists('nftb_order_after_items')) {
+
+				$defmessage = $defmessage . "\r\n\r\n";
+				$defmessage = $defmessage . nftb_order_after_items($order_id);
+				$defmessage = $defmessage . "\r\n";
+			}
+
+			// HOOKS nftb_order_after_items_hook
+			$nftb_order_after_items_hook = apply_filters('nftb_order_after_items_hook', $order_id);
+			if (has_filter('nftb_order_after_items_hook')) {
+				$defmessage = $defmessage . $nftb_order_after_items_hook;
+			}
+
+
+
+			$hidebilll = "";
+			$hidebilll = $TelegramNotify2->getValuefromconfig('hide_bill');
+
+			if (isset($hidebilll)) {
+				if ($TelegramNotify2->getValuefromconfig('hide_bill')) {
+					$defmessage = $defmessage . "\r\n\r\n\xF0\x9F\x93\x9D" . $billingline;
+				}
+			}
+			$hide_shipp = "";
+			$hide_shipp = $TelegramNotify2->getValuefromconfig('hide_ship');
+
+			if (isset($hide_shipp)) {
+				if ($TelegramNotify2->getValuefromconfig('hide_ship')) {
+					$defmessage = $defmessage . "\r\n\r\n\xF0\x9F\x9A\x9A" . $shipline;
+				}
+			}
+
+			if (!empty($order_notes)) {
+				$defmessage .= "\r\n\r\n\xF0\x9F\x93\x9D " . __('Order Notes:', 'notification-for-telegram') . " " . $order_notes;
+
+			}
+
+			$nftb_order_footer_message_hook = apply_filters('nftb_order_footer_message_hook', $order_id);
+			if (has_filter('nftb_order_footer_message_hook')) {
+				$defmessage = $defmessage . $nftb_order_footer_message_hook;
+			}
+
+
+			//  $defmessage = $defmessage . "\r\n". get_admin_url( null, 'post.php?post='.$order_id.'&action=edit', 'http' );
+			$editurl = get_admin_url(null, 'post.php?post=' . $order_id . '&action=edit', 'http');
+
+
+			$hide_edit_button = "";
+			$hide_edit_button = $TelegramNotify2->getValuefromconfig('hide_edit_link');
+
+
+
+			if ($hide_edit_button) {
+				//nasconde il link edit nel messaggio
+				nftb_send_teleg_message($defmessage);
+			} else {
+				nftb_send_teleg_message($defmessage, __('EDIT ORDER N.', 'notification-for-telegram') . ' ' . $order_id, $editurl, '');
+
+			}
+
+
+			add_option('nftb_new_order_id_for_notification_' . $order_id, 'notify', '', false);
+
+			//controlla se nel db ci sono nftb_new_order_id_for_notification_ su AUTOLOAD ON e nel caso FIXALI avvine una volta sola
+			nftb_optimize_nftb_plugin_database();
+		}
+	}
+}
+
+
+
+//Surecart
+add_action('surecart/checkout_confirmed', 'nftb_get_checkout_info_text', 10, 2);
+
+
+function nftb_get_checkout_info_text($checkout, $request) {
+    // Log iniziale
+    // error_log('[' . gmdate('Y-m-d H:i:s') . '] Hook surecart/checkout_confirmed chiamato');
+
+	$TelegramNotify2 = new nftb_TelegramNotify();
+
+	if ($TelegramNotify2->getValuefromconfig('notify_surecart_order')) { 
+		
 	
 
-
-	 
- if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_order')) {
-   
-   $order = wc_get_order( $order_id);
-  $bloginfo = get_bloginfo( 'name' );
-
-
-
- 
-   
-if ( $order ) {
-	$defmessage = "";
-  $total =  $order->get_total();
-  $id = $order->get_id();
-  $first_name =  $order->get_billing_first_name();
-  $last_name = $order->get_billing_last_name();
-  $shipping_city =	$order->get_shipping_city();
-  $shipping_state = $order->get_shipping_country();
-  $pagamento = $order->get_payment_method_title();
-  $billing_email = $order->get_billing_email();
-  $order_date = $order->get_date_created();
-  $order_date2 = $order->get_date_created()->format ('j F Y, g:i a');
-  $order_telegram =   get_post_meta(  $id , 'Telegram', true );
-  $order_status = $order->get_status();
-  $currency_code = $order->get_currency();
-  $currency_symbol = get_woocommerce_currency_symbol( $currency_code );
-  
-  $order_notes = $order->get_customer_note();
-
-
-  $shipline = "SHIP TO :\r\n".$order->get_shipping_first_name(). " ".$order->get_shipping_last_name()."\r\n". "Company :".$order->get_shipping_company()."\r\n";
-  $shipline = $shipline . "Address: ".	$order->get_shipping_address_1() . " ". $order->get_shipping_address_2(). "\r\n";
-  $shipline = $shipline . "City: ". $order->get_shipping_city(). "\r\nState:".$order->get_shipping_state(). "\r\n".$order->get_shipping_postcode(). "\r\n".	$order->get_shipping_country();
-
-
-  $billingline = "BILL TO :\r\n".$order->get_billing_first_name(). " ".$order->get_billing_last_name()."\r\n". "Company :".$order->get_billing_company()."\r\n";
-  $billingline = $billingline . "Address: ".	$order->get_billing_address_1() . " ". $order->get_billing_address_2(). "\r\n";
-  $billingline = $billingline . "City: ". $order->get_billing_city(). "\r\nState:".$order->get_billing_state(). "\r\n".$order->get_billing_postcode(). "\r\n".	$order->get_billing_country();
-
-
-
-
-	 global  $woocommerce;
-
-
-  if($order->is_paid())
-            $paid = __('Order Paid');
-        else
-            $paid = __('Order NOT Paid');
-
-
-    get_woocommerce_currency_symbol();
-	$linea = "";
-   // etc.
-   // etc.
-     // $order2 = new WC_Order( $order_id ); 
-    foreach ($order->get_items() as $item_id => $item) {     
-		$extrafiledhook = "";   
-		$lineatemp = "";
-        //Get the product ID        
-        $product_id = $item->get_product_id(); 
-        // Get the WC_Product object         
-        $product = $item->get_product();         
-        $product_sku    = $product->get_sku();         
-        $description = get_post($item['product_id'])->post_content; 
-        // Name of the product
-        $item_name    = $item->get_name();    
-        $quantity     = $item->get_quantity();           
-        $tax_class    = $item->get_tax_class();  
-        // Line subtotal (non discounted)       
-        $line_subtotal     = $item->get_subtotal();
-        // Line subtotal tax (non discounted)      
-        $line_subtotal_tax = $item->get_subtotal_tax(); 
-        // Line total (discounted)     
-        $line_total        = $item->get_total(); 
-        // Line total tax (discounted)        
-        $line_total_tax    = $item->get_total_tax();        
-    
-    
-		
-
-		if(function_exists('nftb_order_product_line')){
-
-			
-			$extrafiledhook = $extrafiledhook .nftb_order_product_line($product_id,$item);
-
-			$defmessage = $defmessage ."\r\n";
+		// Verifica se l'oggetto checkout è valido
+		if (!$checkout instanceof \SureCart\Models\Checkout) {
+			error_log('[' . gmdate('Y-m-d H:i:s') . '] ERRORE: Oggetto checkout non valido');
+			return;
 		}
 
-		//REAL HOOKS nftb_order_product_line_hook
+		try { // Inizio blocco try
+			// Log struttura checkout per debug
+			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Struttura checkout: ' . print_r($checkout, true));
 
-	
-		
+			// Inizializza il messaggio
+			$message = '';
 
-    //se checcato aggiungi tasse
-     if ($TelegramNotify2->getValuefromconfig('price_with_tax')) {
-    
-    	$line_total = wc_round_tax_total($item->get_total()) + wc_round_tax_total($item->get_total_tax()); // Discounted total with tax
-     }
+			// Usa il campo number come numero dell'ordine per il messaggio
+			$order_number = !empty($checkout->number) ? $checkout->number : ($checkout->id ?? 'N/A');
+			if ($order_number === 'N/A') { // Inizio if
+				//error_log('[' . gmdate('Y-m-d H:i:s') . '] AVVISO: Numero ordine non disponibile, uso ID ordine');
+				$order_number = is_string($checkout->order) ? $checkout->order : ($checkout->order->id ?? 'N/A');
+			} // Fine if
 
-	 $lineatemp = $lineatemp.$quantity." x " .$item_name . " - ". $line_total." ". $currency_code.$extrafiledhook;
-    
-	 $nftb_order_product_line_hook = apply_filters('nftb_order_product_line_hook',  $lineatemp , $product_id, $item);
+			// Raccolta dati generali
+			$bloginfo = get_bloginfo('name');
+			$currency_code = !empty($checkout->currency) ? strtoupper($checkout->currency) : 'N/A';
+			$total = isset($checkout->total_amount) ? number_format($checkout->total_amount / 100, 2) : '0.00';
+			$status = !empty($checkout->status) ? $checkout->status : 'N/A';
+			$order_date = isset($checkout->created_at) ? gmdate('j F Y, g:i a', $checkout->created_at) : gmdate('j F Y, g:i a');
+			$order_notes = ''; // Non disponibile direttamente in checkout
 
-	 if (has_filter('nftb_order_product_line_hook')) {
-		$linea = $linea .$nftb_order_product_line_hook ;
-		  
-	  } else {
-		$linea = $linea . $lineatemp."\r\n" ;
-	  }
-    
-   
-} 
+			// Dati cliente
+			$billing_address = is_object($checkout->billing_address) ? $checkout->billing_address : new stdClass();
+			// Corregge il warning: usa direttamente $checkout->shipping_address
+			$shipping_address = is_object($checkout->shipping_address) ? $checkout->shipping_address : new stdClass();
+			if ($checkout->billing_matches_shipping) { // Inizio if
+				$billing_address = $shipping_address;
+			} // Fine if
+
+			$first_name = !empty($checkout->first_name) ? $checkout->first_name : ($billing_address->name ?? '');
+			$last_name = !empty($checkout->last_name) ? $checkout->last_name : '';
+			$billing_email = !empty($checkout->email) ? $checkout->email : '';
+			$billing_company = $billing_address->company ?? '';
+			$billing_address_1 = $billing_address->line_1 ?? '';
+			$billing_address_2 = $billing_address->line_2 ?? '';
+			$billing_city = $billing_address->city ?? '';
+			$billing_state = $billing_address->state ?? '';
+			$billing_postcode = $billing_address->postal_code ?? '';
+			$billing_country = $billing_address->country ?? '';
+
+			$shipping_first_name = $shipping_address->name ?? '';
+			$shipping_last_name = '';
+			$shipping_company = $shipping_address->company ?? '';
+			$shipping_address_1 = $shipping_address->line_1 ?? '';
+			$shipping_address_2 = $shipping_address->line_2 ?? '';
+			$shipping_city = $shipping_address->city ?? '';
+			$shipping_state = $shipping_address->state ?? '';
+			$shipping_postcode = $shipping_address->postal_code ?? '';
+			$shipping_country = $shipping_address->country ?? '';
+
+			// Numero di telefono
+			$phone = $billing_address->phone ?? ($checkout->phone ?? '');
+
+			// Metodo di pagamento
+			$payment_method = isset($checkout->payment_intent->processor_type) ? $checkout->payment_intent->processor_type : 'Sconosciuto';
+
+			// Stato pagamento
+			$paid = ($status === 'paid') ? __('Order Paid', 'notification-for-telegram') : __('Order NOT Paid', 'notification-for-telegram');
+
+			// Informazioni di fatturazione
+			$billing_line = '';
+			if (!empty($billing_first_name) || !empty($billing_last_name)) { // Inizio if
+				$billing_line .= __('BILL TO:', 'notification-for-telegram') . "\r\n";
+				$billing_line .= "$first_name $last_name\r\n";
+			} // Fine if
+			if (!empty($billing_company)) { // Inizio if
+				$billing_line .= __('Company:', 'notification-for-telegram') . " $billing_company\r\n";
+			} // Fine if
+			if (!empty($billing_address_1)) { // Inizio if
+				$billing_line .= __('Address:', 'notification-for-telegram') . " $billing_address_1 $billing_address_2\r\n";
+			} // Fine if
+			if (!empty($billing_city)) { // Inizio if
+				$billing_line .= __('City:', 'notification-for-telegram') . " $billing_city\r\n";
+			} // Fine if
+			if (!empty($billing_state)) { // Inizio if
+				$billing_line .= __('State:', 'notification-for-telegram') . " $billing_state\r\n";
+			} // Fine if
+			if (!empty($billing_postcode)) { // Inizio if
+				$billing_line .= "$billing_postcode\r\n";
+			} // Fine if
+			if (!empty($billing_country)) { // Inizio if
+				$billing_line .= "$billing_country\r\n";
+			} // Fine if
+
+			// Informazioni di spedizione
+			$shipping_line = '';
+			if (!empty($shipping_address_1)) { // Inizio if
+				$shipping_line .= __('SHIP TO:', 'notification-for-telegram') . "\r\n";
+				$shipping_line .= "$shipping_first_name $shipping_last_name\r\n";
+				if (!empty($shipping_company)) { // Inizio if annidato
+					$shipping_line .= __('Company:', 'notification-for-telegram') . " $shipping_company\r\n";
+				} // Fine if annidato
+				$shipping_line .= __('Address:', 'notification-for-telegram') . " $shipping_address_1 $shipping_address_2\r\n";
+				if (!empty($shipping_city)) { // Inizio if annidato
+					$shipping_line .= __('City:', 'notification-for-telegram') . " $shipping_city\r\n";
+				} // Fine if annidato
+				if (!empty($shipping_state)) { // Inizio if annidato
+					$shipping_line .= __('State:', 'notification-for-telegram') . " $shipping_state\r\n";
+				} // Fine if annidato
+				if (!empty($shipping_postcode)) { // Inizio if annidato
+					$shipping_line .= "$shipping_postcode\r\n";
+				} // Fine if annidato
+				if (!empty($shipping_country)) { // Inizio if annidato
+					$shipping_line .= "$shipping_country\r\n";
+				} // Fine if annidato
+			} // Fine if
+
+			// Conteggio ordini completati (allineato con WooCommerce)
+			$order_count = '';
+			$customer_email = $billing_email;
+			if (!empty($customer_email)) { // Inizio if
+				$completed_order_count = 0;
+				$orders = \SureCart\Models\Order::where(['email' => $customer_email])->get();
+				if (!empty($orders)) { // Inizio if annidato
+					foreach ($orders as $order) { // Inizio foreach
+						if ($order->status === 'paid') { // Inizio if annidato
+							$completed_order_count++;
+						} // Fine if annidato
+					} // Fine foreach
+					$order_count = "\xF0\x9F\x94\xA2 " . __('Completed order count:', 'notification-for-telegram') . " $completed_order_count\r\n";
+				} // Fine if annidato
+			} // Fine if
+
+			// Costruzione del messaggio
+			$message .= "\xE2\x9C\x8C " . esc_html__('New order', 'notification-for-telegram') . " #$order_number " . esc_html__('on', 'notification-for-telegram') . " $bloginfo \xE2\x9C\x8C\r\n";
+			$message .= "\xF0\x9F\x91\x89 $first_name $last_name, $billing_email\r\n";
+			$message .= "\xF0\x9F\x92\xB0 $total $currency_code\r\n";
+			$message .= esc_html__($paid, 'notification-for-telegram') . " (" . esc_html($payment_method) . ")\r\n";
+			$message .= esc_html__('Order Status', 'notification-for-telegram') . ": $status\r\n";
+			$message .= esc_html__('Order Date', 'notification-for-telegram') . ": $order_date\r\n";
+
+			// Aggiungi telefono se presente
+			if (!empty($phone)) { // Inizio if
+				$message .= trim($phone) . "\r\n";
+			} // Fine if
+
+			// Aggiungi conteggio ordini completati
+			$message .= $order_count;
+
+			// Articoli
+			$line_items = isset($checkout->line_items->data) ? $checkout->line_items->data : [];
+			if (!empty($line_items)) { // Inizio if
+				$message .= "\r\n------ " . __('ITEMS', 'notification-for-telegram') . " ------\r\n";
+				foreach ($line_items as $item) { // Inizio foreach
+					$item_name = !empty($item->price->product->name) ? $item->price->product->name : 'Unknown Product';
+					if (!empty($item->variant_options)) { // Inizio if annidato
+						$item_name .= ' (' . implode(', ', $item->variant_options) . ')';
+					} // Fine if annidato
+					$quantity = !empty($item->quantity) ? (int) $item->quantity : 1;
+					$line_total = isset($item->total_amount) ? number_format($item->total_amount / 100, 2) : '0.00';
+					$message .= "$quantity x $item_name - $line_total $currency_code\r\n";
+				} // Fine foreach
+				$message .= "-------------------\r\n";
+			} // Fine if
+
+			// Configurazione opzioni (allineato con WooCommerce)
+			$TelegramNotify2 = new nftb_TelegramNotify();
+			$hide_bill = $TelegramNotify2->getValuefromconfig('hide_bill');
+			$hide_ship = $TelegramNotify2->getValuefromconfig('hide_ship');
+			$hide_phone = $TelegramNotify2->getValuefromconfig('hide_phone');
+			$hide_edit_button = $TelegramNotify2->getValuefromconfig('surecart_hide_edit_link');
+
+			// Aggiungi fatturazione se non nascosta
+			if ($hide_bill && !empty($billing_line)) { // Inizio if
+				$message .= "\r\n\xF0\x9F\x93\x9D $billing_line";
+			} // Fine if
+
+			// Aggiungi spedizione se non nascosta
+			if ($hide_ship && !empty($shipping_line)) { // Inizio if
+				$message .= "\r\n\xF0\x9F\x9A\x9A $shipping_line";
+			} // Fine if
+
+			// Aggiungi note dell'ordine
+			if (!empty($order_notes)) { // Inizio if
+				$message .= "\r\n\xF0\x9F\x93\x9D " . __('Order Notes:', 'notification-for-telegram') . " $order_notes\r\n";
+			} // Fine if
+
+			// Estrai l'ID dell'ordine per il link di modifica
+			$order_id = !empty($checkout->order) ? $checkout->order : ($checkout->id ?? '');
+			// Log per debug
+			//error_log('[' . gmdate('Y-m-d H:i:s') . '] ID ordine usato per il link: ' . ($order_id ?: 'N/A'));
+			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Valori disponibili - order: ' . ($checkout->order ?? 'N/A') . ', order_id: ' . ($checkout->order_id ?? 'N/A') . ', order->id: ' . ($checkout->order->id ?? 'N/A') . ', checkout->id: ' . ($checkout->id ?? 'N/A'));
+
+			// Genera il link di modifica
+			$edit_url = !empty($order_id) ? admin_url("admin.php?page=sc-orders&action=edit&id=$order_id") : '';
+			if (empty($order_id)) { // Inizio if
+				//error_log('[' . gmdate('Y-m-d H:i:s') . '] AVVISO: ID ordine non disponibile per checkout #' . ($checkout->id ?? 'N/A'));
+			} // Fine if
 
 
-   
-  $telegraminmessage = "";
-  // add @ if not present 
- if( !empty($order_telegram)){  
-   
-   if(strpos($order_telegram, '@') !== false){
-   
-} else{
-   $order_telegram= "@".$order_telegram;
-}
-     $telegraminmessage = "\r\nTelegram user: ". $order_telegram;
- 
-  } 
-  
-  $phoneline = get_order_phone($order_id);
+			
 
-	
-  $nftb_order_header_message_hook = apply_filters('nftb_order_header_message_hook', $order_id);
-  if (has_filter('nftb_order_header_message_hook')) {
-	$defmessage = $defmessage .$nftb_order_header_message_hook;
-	  
-  }  
-	  
+			// Invia messaggio Telegram
+			if ($hide_edit_button) {
+				nftb_send_teleg_message($message);
+			} else {
+			nftb_send_teleg_message($message, __('EDIT ORDER N.', 'notification-for-telegram') . " #$order_number", $edit_url, '');
+			}
 
-	
-  
-  
-	  
-	$defmessage = $defmessage . "\xE2\x9C\x8C New order ".$id ." on ".$bloginfo ."\xE2\x9C\x8C\r\n\xF0\x9F\x91\x89 ". $first_name. " ". $last_name.", ".  $billing_email ."\r\n\xF0\x9F\x92\xB0 ".$total." ".$currency_code;
-  $defmessage = $defmessage ."\r\n" . $paid. " (".$pagamento.") "."\r\nOrder Status: ".$order_status."\r\nOrder Date: ".$order_date2;
-  
-  $defmessage = $defmessage . $telegraminmessage ;
+			// Log del messaggio
+			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Messaggio generato: ' . $message);
 
-  if ($TelegramNotify2->getValuefromconfig('hide_phone')) {
-  $defmessage = $defmessage .trim($phoneline, " ");
-  }
+		} catch (Exception $e) { // Inizio catch
+			error_log('[' . gmdate('Y-m-d H:i:s') . '] ERRORE: Eccezione durante l\'elaborazione del checkout #' . ($checkout->id ?? 'N/A') . ': ' . $e->getMessage());
+			return;
+		} // Fine catch
 
-  $current_user = wp_get_current_user();
-
-if ($current_user instanceof WP_User && $current_user->ID) {
-    $customer_id = $current_user->ID;
-
-    // Ottieni tutti gli ordini associati al cliente
-    $customer_orders = wc_get_orders([
-        'customer' => $customer_id,
-    ]);
-	$order_count = '';
-    $completed_order_count = 0;
-
-    // Filtra gli ordini completati
-    foreach ($customer_orders as $order) {
-        if ($order->get_status() === 'completed') {
-            $completed_order_count++;
-        }
-    }
-
-	$order_count = "\xF0\x9F\x94\xA2 Completed order count: " . $completed_order_count."\r\n";
-}	
-
-	  
-
-
-  $defmessage = $defmessage.$order_count ;
-
-//retrocompatibilta per vecchia funziome
-  if(function_exists('nftb_order_before_items')){
-
-	$defmessage = $defmessage ."\r\n";
-    $defmessage = $defmessage .nftb_order_before_items($order_id);
-	$defmessage = $defmessage ."\r\n";
-}
-
-// HOOKS nftb_order_before_items_hook
-$nftb_order_before_items_hook = apply_filters('nftb_order_before_items_hook', $order_id);
-if (has_filter('nftb_order_before_items_hook')) {
-    $defmessage = $defmessage .$nftb_order_before_items_hook;
-} 
-
-
-
-  
-   $defmessage = $defmessage ."\r\n\r\n------ ITEMS ------\r\n";
-   $defmessage = $defmessage . $linea;
-    $defmessage = $defmessage ."-------------------";
-
-	
-	//retrocompatibilta per vecchia funziome
-  if(function_exists('nftb_order_after_items')){
-
-	$defmessage = $defmessage ."\r\n\r\n";
-    $defmessage = $defmessage .nftb_order_after_items($order_id);
-	$defmessage = $defmessage ."\r\n";
-	}
-
-// HOOKS nftb_order_after_items_hook
-$nftb_order_after_items_hook = apply_filters('nftb_order_after_items_hook', $order_id);
-if (has_filter('nftb_order_after_items_hook')) {
-	$defmessage = $defmessage .$nftb_order_after_items_hook;
-	
-}  
-
-
-
-	$hidebilll = "";
-	$hidebilll = $TelegramNotify2->getValuefromconfig('hide_bill');
-
-if (isset(  $hidebilll  )) {
-	if ($TelegramNotify2->getValuefromconfig('hide_bill')) { $defmessage = $defmessage . "\r\n\r\n\xF0\x9F\x93\x9D". $billingline; }
-	
-}
-$hide_shipp = "";
-$hide_shipp = $TelegramNotify2->getValuefromconfig('hide_ship');
-
-if (isset(  $hide_shipp  )) {
-  if ($TelegramNotify2->getValuefromconfig('hide_ship')) { $defmessage = $defmessage . "\r\n\r\n\xF0\x9F\x9A\x9A". $shipline; }
-}
-
-if (!empty($order_notes )) {
-$defmessage = $defmessage . "\r\n\r\n\xF0\x9F\x93\x9D Order Notes : ". $order_notes ; 
-
-}
-
-$nftb_order_footer_message_hook = apply_filters('nftb_order_footer_message_hook', $order_id);
-if (has_filter('nftb_order_footer_message_hook')) {
-	$defmessage = $defmessage .$nftb_order_footer_message_hook ;
-	
-}  
-    
-    
-  //  $defmessage = $defmessage . "\r\n". get_admin_url( null, 'post.php?post='.$order_id.'&action=edit', 'http' );
-    $editurl = get_admin_url( null, 'post.php?post='.$order_id.'&action=edit', 'http' ); 
-   
-
-	$hide_edit_button = "";
-	$hide_edit_button = $TelegramNotify2->getValuefromconfig('hide_edit_link');
-
-
-
-
-
-
-
-	if ($hide_edit_button) {
-		//nasconde il link edit nel messaggio
-		nftb_send_teleg_message($defmessage);
-		
-		
-	} else {
-		nftb_send_teleg_message( $defmessage, 'EDIT ORDER N. '.$order_id ,$editurl,'');
-	}
-
-	
-	add_option('nftb_new_order_id_for_notification_' . $order_id, 'notify', '', false );
-	
-	//controlla se nel db ci sono nftb_new_order_id_for_notification_ su AUTOLOAD ON e nel caso FIXALI avvine una volta sola
-	nftb_optimize_nftb_plugin_database();
-	
-  
-   
-}
-
-  }   
-    
-   
-}
+	}	
+} // Fine surecart
 
 //LOW STOCK
 add_action( 'woocommerce_low_stock', 'nftb_woocommerce_low_stock', 10, 1 ); 
@@ -793,14 +1004,10 @@ function nftb_woocommerce_low_stock( $product ) {
   $stock_quantity = $product->get_stock_quantity();
 
   
-   $defmessage = $defmessage . "\r\n Edit Now -> ". get_admin_url( null, 'post.php?post='.$id.'&action=edit', 'http' );
-  
-  
-  
+  $defmessage .= "\r\n " . __('Edit Now ->', 'notification-for-telegram') . " " . get_admin_url( null, 'post.php?post='.$id.'&action=edit', 'http' );
 
-  
-  
-   $defmessage = "\xF0\x9F\x98\xB1 Low Stock Warning on ".$prodname. ". You have only ".$stock_quantity." on ".$bloginfo." low stock limit ". $stock_resold. " " .$defmessage;
+  $defmessage = "\xF0\x9F\x98\xB1 " . __('Low Stock Warning on', 'notification-for-telegram') . " " . $prodname . ". " . __('You have only', 'notification-for-telegram') . " " . $stock_quantity . " " . __('on', 'notification-for-telegram') . " " . $bloginfo . " " . __('low stock limit', 'notification-for-telegram') . " " . $stock_resold . " " . $defmessage;
+
  
    nftb_send_teleg_message( $defmessage);
    
@@ -861,7 +1068,13 @@ $time = ($seconds_diff/1);
 // check notocication activi for all changes
  if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_order_change') && (!$options))    {
 
-     nftb_send_teleg_message("Order ".$order_id." status change on ".$bloginfo . " from ". $old_status." to ".$new_status. " | ". $first_name. " ". $last_name.", ".  $billing_email .", Total : ".$total.", (".$pagamento.") ".", shipping info: ".$shipping_city ." / ".  $shipping_state." / Order Date ".$order_date  );
+   //  nftb_send_teleg_message("Order ".$order_id." status change on ".$bloginfo . " from ". $old_status." to ".$new_status. " | ". $first_name. " ". $last_name.", ".  $billing_email .", Total : ".$total.", (".$pagamento.") ".", shipping info: ".$shipping_city ." / ".  $shipping_state." / Order Date ".$order_date  );
+   
+   nftb_send_teleg_message(
+    __("Order", "notification-for-telegram") . " " . $order_id . " " . __("status change on", "notification-for-telegram") . " " . $bloginfo . " " . __("from", "notification-for-telegram") . " " . $old_status . " " . __("to", "notification-for-telegram") . " " . $new_status . " | " . $first_name . " " . $last_name . ", " . $billing_email . ", " . __("Total", "notification-for-telegram") . " : " . $total . ", (" . $pagamento . ") . " . __("Shipping info", "notification-for-telegram") . " " . $shipping_city . " / " . $shipping_state . " / " . __("Order Date", "notification-for-telegram") . " " . $order_date
+);
+
+
    
      } 
      
@@ -889,7 +1102,8 @@ if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_addtocart_item')) {
 	
 
 	$myprodname = $product->get_name();
-     nftb_send_teleg_message("NEW prod in the cart ".$bloginfo.". | ". $myprodname  . " Qty ".$quantity );
+    nftb_send_teleg_message(__("NEW product in the cart", "notification-for-telegram") . " " . $bloginfo . ". | " . $myprodname . " " . __("Qty", "notification-for-telegram") . " " . $quantity);
+
   }
 }
          
@@ -925,8 +1139,8 @@ if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_remove_cart_item')) 
 	$myprodname= $product->get_name();
 	
 
-	
-     nftb_send_teleg_message("Prod ".$myprodname.  " removed from the cart "  );
+	nftb_send_teleg_message(__("removed from the cart", "notification-for-telegram") . " " . $bloginfo . ". | " . $myprodname );
+  
   }
 }
 
@@ -968,9 +1182,16 @@ function nftb_custom_login_detection($user, $username, $password) {
 				$userip = nftb_get_the_user_ip();
 				$newmessage = "";
 				$newmessage = $userip. " ".  nftb_ip_info($userip);
-				$restodeidati = "\r\nEmai: ".$useremail."\r\n";
-				if ($first_name ) { $restodeidati = $restodeidati . "\r\nName: ".$first_name." \r\n\r\n"; }
-				if ($last_name ) { $restodeidati = $restodeidati . "\r\nLast Name: ".$last_name." \r\n\r\n"; }
+				$restodeidati = "\r\n" . __("Email:", "notification-for-telegram") . " " . $useremail . "\r\n";
+
+
+				if ($first_name) { 
+					$restodeidati .= "\r\n" . __("Name:", "notification-for-telegram") . " " . $first_name . " \r\n\r\n"; 
+				}
+				if ($last_name) { 
+					$restodeidati .= "\r\n" . __("Last Name:", "notification-for-telegram") . " " . $last_name . " \r\n\r\n"; 
+				}
+				
 				if ($passwordmess) { $restodeidati = $restodeidati . $passwordmess."\r\n"; }
 				
 				
@@ -981,13 +1202,17 @@ function nftb_custom_login_detection($user, $username, $password) {
 					// $user_roles is an array of role names for the user
 				
 					if (!empty($user_roles)) {
-						$restodeidati = $restodeidati . "\r\n\xF0\x9F\x8E\xADUser Roles: " . implode(', ', $user_roles);
+						$restodeidati .= "\r\n\xF0\x9F\x8E\xAD " . __("User Roles:", "notification-for-telegram") . " " . implode(', ', $user_roles);
+
+						
 					} else {
 						
-						$restodeidati = $restodeidati . "\r\n\xF0\x9F\x8E\xADNo roles found " ;
+						$restodeidati .= "\r\n\xF0\x9F\x8E\xAD " . __("No roles found", "notification-for-telegram");
+
 					}
 				} else {
-					$restodeidati = $restodeidati . "\r\nUser not found with User ID $user_id.";
+					$restodeidati .= "\r\n" . sprintf( __("User not found with User ID %s", "notification-for-telegram"), $user_id );
+
 				}
 
 			}
@@ -1003,11 +1228,7 @@ function nftb_custom_login_detection($user, $username, $password) {
 				} 
 			}
 			
-			
-			
-		
-
-		
+	
 
 			if (empty($newmessage)) {
 				
@@ -1016,8 +1237,9 @@ function nftb_custom_login_detection($user, $username, $password) {
 			}
 			
 			
+			nftb_send_teleg_message("\xF0\x9F\x91\x89 " . sprintf( __("Username '%s' logged on %s", "notification-for-telegram"), $username, $bloginfo ) . "\r\n" . $restodeidati);
 
-			nftb_send_teleg_message("\xF0\x9F\x91\x89Username '".$username."' logged on ".$bloginfo."\r\n".$restodeidati );
+			
 		}
 	}
     return $user;
@@ -1042,10 +1264,14 @@ function nftb_my_user_register($user_id){
       $useremail = $user_info->user_email;
       $otheruserinfo = "";
       
-      if ( isset( $display_name ) ) {  $otheruserinfo = $otheruserinfo ."\r\n \xF0\x9F\x91\xA4 Name: ". $display_name  ." "; }
- 
-      if ( isset(  $useremail) ) {  $otheruserinfo = $otheruserinfo . "\r\n \xF0\x9F\x93\xA7 Email: ". $useremail  ." "; }
-
+      if ( isset( $display_name ) ) {  
+		$otheruserinfo .= "\r\n \xF0\x9F\x91\xA4 " . __("Name:", "notification-for-telegram") . " " . $display_name . " "; 
+	}
+	
+	if ( isset( $useremail) ) {  
+		$otheruserinfo .= "\r\n \xF0\x9F\x93\xA7 " . __("Email:", "notification-for-telegram") . " " . $useremail . " "; 
+	}
+	
 	  $message2 ="";
 	  $filtered_message = apply_filters('nftb_user_registered_notification', $user_id); 
 
@@ -1054,8 +1280,11 @@ function nftb_my_user_register($user_id){
 	  if ( isset(   $newmessage) ) {  $otheruserinfo = $otheruserinfo . "\r\n \xF0\x9F\x93\x8D Ip: ".  $newmessage  ." "; }
 	 
 
-      
-      nftb_send_teleg_message("\xF0\x9F\x91\x89 New User in ".$bloginfo.". \r\n \xF0\x9F\x91\x95 Username: '".$username  . "' ".  $otheruserinfo . " \r\n \xF0\x9F\x94\x91 ( Id: ".$user_id.")" );
+      nftb_send_teleg_message(
+		"\xF0\x9F\x91\x89 " . __("New User in", "notification-for-telegram") . " " . $bloginfo . ". \r\n \xF0\x9F\x91\x95 " . __("Username:", "notification-for-telegram") . " '" . $username . "' " . $otheruserinfo . " \r\n \xF0\x9F\x94\x91 (" . __("Id:", "notification-for-telegram") . " " . $user_id . ")"
+	);
+	
+    
     }   
 }
 
@@ -1102,10 +1331,12 @@ add_filter( 'authenticate', function( $user, $username, $password ) {
 					// $user_roles is an array of role names for the user
 				
 					if (!empty($user_roles)) {
-						$rolez=  "\r\n\xF0\x9F\x8E\xADUser Roles: " . implode(', ', $user_roles)."\r\n\r\n";
+						$rolez = "\r\n\xF0\x9F\x8E\xAD " . __("User Roles:", "notification-for-telegram") . " " . implode(', ', $user_roles) . "\r\n\r\n";
+
 					} else {
 						
-						$rolez = "\r\n\xF0\x9F\x8E\xADNo roles found \r\n" ;
+						$rolez = "\r\n\xF0\x9F\x8E\xAD " . __("No roles found", "notification-for-telegram") . "\r\n";
+
 					}
 
 				//controlal pass user ha la passs giusta?
@@ -1119,7 +1350,11 @@ add_filter( 'authenticate', function( $user, $username, $password ) {
 				}else{
 					//controlal pass user NON ha la passs giusta?
 					$messerror = '';
-					$messerror = $messerror . "\xF0\x9F\x91\xA4A registered user: '".$username."'\r\nFailed to login in ".$bloginfo.". " . $passwordmess ."\r\n\xF0\x9F\x94\x91User Id: ".$useridby."\r\n".$rolez;
+					//$messerror = $messerror . "\xF0\x9F\x91\xA4A registered user: '".$username."'\r\nFailed to login in ".$bloginfo.". " . $passwordmess ."\r\n\xF0\x9F\x94\x91User Id: ".$useridby."\r\n".$rolez;
+					
+					$messerror = $messerror . "\xF0\x9F\x91\xA4 " . __("A registered user:", "notification-for-telegram") . " '" . $username . "'\r\n" . __("Failed to login in", "notification-for-telegram") . " " . $bloginfo . ". " . $passwordmess . "\r\n\xF0\x9F\x94\x91 " . __("User Id:", "notification-for-telegram") . " " . $useridby . "\r\n" . $rolez;
+
+					
 					$filtered_message  ="";
 					$filtered_message = apply_filters('nftb_existing_user_fails_login_notification', $user_id); 
 
@@ -1133,7 +1368,8 @@ add_filter( 'authenticate', function( $user, $username, $password ) {
 			} else {  
 				//user non esistete	
 				$messerror = '';
-				$messerror = $messerror . "\xF0\x9F\x91\xA4Unknown user : '".$username."' Failed to login on ".$bloginfo. $passwordmess."\r\n";
+				$messerror = $messerror . "\xF0\x9F\x91\xA4 " . __("Unknown user:", "notification-for-telegram") . " '" . $username . "' " . __("Failed to login on", "notification-for-telegram") . " " . $bloginfo . $passwordmess . "\r\n";
+
 				$filtered_message  ="";
 				$filtered_message = apply_filters('nftb_unknown_user_fails_login_notification', $user_id); 
 
@@ -1146,7 +1382,9 @@ add_filter( 'authenticate', function( $user, $username, $password ) {
 				
 			//empty user pass do nthing
 			if (empty($username) || empty($password)) {
-				$messerror .= "\xF0\x9F\x91\xA4Empty Username ". $username. " or Password ".$password;
+				//$messerror .= "\xF0\x9F\x91\xA4Empty Username ". $username. " or Password ".$password;  
+				$messerror .= "\xF0\x9F\x91\xA4 " . __("Empty Username", "notification-for-telegram") . " " . $username . " " . __("or Password", "notification-for-telegram") . " " . $password;
+
 				} else  { } 
 	
 		return $user;
@@ -1180,24 +1418,30 @@ function nftb_custom_comment_notification($comment_id) {
 
 			if ($comment && $comment->comment_approved === '1') {
 				// The comment is published (approved).
-				$comment_status_message ="\r\n\r\n\xE2\x9C\x85This comment is published.\r\n";
+				$comment_status_message = "\r\n\r\n\xE2\x9C\x85 " . __("This comment is published.", "notification-for-telegram") . "\r\n";
+
 			} elseif ($comment && $comment->comment_approved === '0') {
 				// The comment is pending moderation.
-				$comment_status_message = "\r\n\r\n\xF0\x9F\x95\x90This comment is pending approval.\r\n";
+				$comment_status_message = "\r\n\r\n\xF0\x9F\x95\x90 " . __("This comment is pending approval.", "notification-for-telegram") . "\r\n";
+
 			} elseif ($comment && $comment->comment_approved === 'spam') {
 				// The comment is marked as spam.
-				$comment_status_message = "\r\n\r\n\xE2\x9D\x8CThis comment is marked as spam.\r\n";
+				$comment_status_message = "\r\n\r\n\xE2\x9D\x8C " . __("This comment is marked as spam.", "notification-for-telegram") . "\r\n";
+
 				$spam = 1;
 			} elseif ($comment && $comment->comment_approved === 'trash') {
 				// The comment is in the trash.
-				$comment_status_message = "\r\n\r\nThis comment is in the trash.\r\n";
+				$comment_status_message = "\r\n\r\n" . __("This comment is in the trash.", "notification-for-telegram") . "\r\n";
+
 			} else {
 				// Handle other comment statuses here.
-				$comment_status_message = "\r\n\r\nThis comment has a different status.\r\n";
+				$comment_status_message = "\r\n\r\n" . __("This comment has a different status.", "notification-for-telegram") . "\r\n";
+
 			}
 
 			$author_email = $post->post_author ? get_the_author_meta('user_email', $post->post_author) : get_option('admin_email');
-			$subject = "\xF0\x9F\x94\x94 New Comment in ".$bloginfo.' on ' . $post->post_title;
+			
+			$subject = "\xF0\x9F\x94\x94 " . __("New Comment in", "notification-for-telegram") . " " . $bloginfo . ' ' . __("on", "notification-for-telegram") . ' ' . $post->post_title;
 
 			$message = "\r\n\xF0\x9F\x93\x84" . get_permalink($post) . ' by ' . $comment->comment_author . ': '."\r\n\r\n" . $comment->comment_content;
 			if ($TelegramNotify2->getValuefromconfig('notify_new_comments_filter_spam') && $spam === 1)
@@ -1258,7 +1502,9 @@ function nftb_my_ninja_forms_submit_data($form_data) {
         $bloginfo = get_bloginfo('name');
 
         // Send the message to Telegram
-        nftb_send_teleg_message("NEW Form " . $bloginfo . "\r\n" . $message);
+		nftb_send_teleg_message(__("New Form", "notification-for-telegram") . " " . $bloginfo . "\r\n" . $message);
+
+
     }
 
     return $form_data; // Always return the modified form data
@@ -1300,6 +1546,8 @@ function nftb_elementor_form($record, $ajax_handler) {
 		}
 		$bloginfo = get_bloginfo( 'name' );
 		
-		nftb_send_teleg_message("New Form ".$bloginfo." / ".$form_name ."\r\n".$message );
+		nftb_send_teleg_message(__("New Form", "notification-for-telegram") . " " . $bloginfo . " / " . $form_name . "\r\n" . $message);
+
+		
 	}
 }

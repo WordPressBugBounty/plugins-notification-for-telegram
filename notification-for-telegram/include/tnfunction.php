@@ -15,11 +15,13 @@ function get_order_phone($order_id) {
         
         $phonelink = "";
         if (str_starts_with($phone, '+')) {
-            $phonelink = "Phone number links https://t.me/".$phone ."  \r\n";
+            $phonelink = __('Phone number link:', 'notification-for-telegram') . " https://t.me/" . $phone . "  \r\n";
+
         }
 
   		
-  		return "\r\n\xE2\x98\x8E  Customer Phone -> ".$phone ."  \r\n ". $phonelink;
+        return "\r\n\xE2\x98\x8E  " . __('Customer Phone ->', 'notification-for-telegram') . " " . $phone . "  \r\n " . $phonelink;
+
   		} else {
   		
   		return "";
