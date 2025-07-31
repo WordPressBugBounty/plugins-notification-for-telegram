@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4.3
+ * Version: 3.4.4
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -33,40 +33,23 @@ function nftb_init_method() {
     
 
 //Enqueue Admin CSS on Job Board Settings page only
-if ( isset( $_GET['page'] ) && $_GET['page'] == 'telegram-notify' && !$notify_donot_load_css  ) {
-    // Enqueue Core Admin Styles
-    wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/mystyle.css', __FILE__ ));
-   
-
-	//OLD BOOTSTRAP CODE
-     // JS
-    // wp_register_script('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js');
-    // wp_enqueue_script('nftb_bootstrap');
-
-    // CSS
-    // wp_register_style('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css');
-    // wp_enqueue_style('nftb_bootstrap');
-   
- 
-wp_enqueue_script('nftb_plugin_script', plugins_url('/myjs.js', __FILE__), array('jquery') );
-
-    } else { 
-		wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/nftb_minimal.css', __FILE__ ));
-	
-// 		echo '<style>
-// .telegram-notify-page .telegram-notify-nav-tab {
-//     float: left;
-
-//     padding: 5px 10px;
-//     font-size: 14px;
-//     line-height: 1.71428571;
-  
+if ( isset( $_GET['page'] ) && $_GET['page'] == 'telegram-notify'  ) {
     
-// }
-// </style>';
+	if ( !$notify_donot_load_css  ) {
+	// Enqueue Core Admin Styles 
+    wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/mystyle.css', __FILE__ ));
+	} else {
+		
+		// se la selezione notify_donot_load_css attiva Enqueue Minimal CSS Styles 
+		wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/nftb_minimal.css', __FILE__ ));
 
 
 	}
+      
+ 
+wp_enqueue_script('nftb_plugin_script', plugins_url('/myjs.js', __FILE__), array('jquery') );
+
+    } 
        
 }    
 
