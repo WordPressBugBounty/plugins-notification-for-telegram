@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4.1
+ * Version: 3.4.2
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -17,6 +17,7 @@ include( plugin_dir_path( __FILE__ ) . 'include/tnfunction.php');
 include( plugin_dir_path( __FILE__ ) . 'include/update_function.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftncron.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftb_optionpage.php');
+require_once plugin_dir_path(__FILE__)  . 'include/nftb_surecart.php'; 
 
 
 $nftb_robotfile_path = plugin_dir_path( __FILE__ ) . 'include/nftb_robot.php';
@@ -27,24 +28,40 @@ if (file_exists($nftb_robotfile_path)) {
 
 function nftb_init_method() {
 // LOAD JQUERY SCRIPTS
+    $telegram_notify_option = get_option('telegram_notify_option_name');
+    $notify_donot_load_css = isset($telegram_notify_option['notify_donot_load_css']) ? $telegram_notify_option['notify_donot_load_css'] : false;
+    
 
 //Enqueue Admin CSS on Job Board Settings page only
-if ( isset( $_GET['page'] ) && $_GET['page'] == 'telegram-notify' ) {
+if ( isset( $_GET['page'] ) && $_GET['page'] == 'telegram-notify' && !$notify_donot_load_css  ) {
     // Enqueue Core Admin Styles
     wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/mystyle.css', __FILE__ ));
    
+
+	//OLD BOOTSTRAP CODE
      // JS
-    wp_register_script('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js');
-    wp_enqueue_script('nftb_bootstrap');
+    // wp_register_script('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js');
+    // wp_enqueue_script('nftb_bootstrap');
 
     // CSS
-    wp_register_style('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css');
-    wp_enqueue_style('nftb_bootstrap');
+    // wp_register_style('nftb_bootstrap', '//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css');
+    // wp_enqueue_style('nftb_bootstrap');
    
  
 wp_enqueue_script('nftb_plugin_script', plugins_url('/myjs.js', __FILE__), array('jquery') );
 
-    }
+    } else { 
+		echo '<style>
+.telegram-notify-page .telegram-notify-nav-tab {
+    float: left;
+    padding: 5px 10px;
+    font-size: 14px;
+    line-height: 1.71428571;
+  
+    
+}
+</style>';
+	}
        
 }    
 
@@ -755,236 +772,7 @@ function nftb_detect_new_order_on_checkout($order_id)
 
 
 
-//Surecart
-add_action('surecart/checkout_confirmed', 'nftb_get_checkout_info_text', 10, 2);
 
-
-function nftb_get_checkout_info_text($checkout, $request) {
-    // Log iniziale
-    // error_log('[' . gmdate('Y-m-d H:i:s') . '] Hook surecart/checkout_confirmed chiamato');
-
-	$TelegramNotify2 = new nftb_TelegramNotify();
-
-	if ($TelegramNotify2->getValuefromconfig('notify_surecart_order')) { 
-		
-	
-
-		// Verifica se l'oggetto checkout è valido
-		if (!$checkout instanceof \SureCart\Models\Checkout) {
-			error_log('[' . gmdate('Y-m-d H:i:s') . '] ERRORE: Oggetto checkout non valido');
-			return;
-		}
-
-		try { // Inizio blocco try
-			// Log struttura checkout per debug
-			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Struttura checkout: ' . print_r($checkout, true));
-
-			// Inizializza il messaggio
-			$message = '';
-
-			// Usa il campo number come numero dell'ordine per il messaggio
-			$order_number = !empty($checkout->number) ? $checkout->number : ($checkout->id ?? 'N/A');
-			if ($order_number === 'N/A') { // Inizio if
-				//error_log('[' . gmdate('Y-m-d H:i:s') . '] AVVISO: Numero ordine non disponibile, uso ID ordine');
-				$order_number = is_string($checkout->order) ? $checkout->order : ($checkout->order->id ?? 'N/A');
-			} // Fine if
-
-			// Raccolta dati generali
-			$bloginfo = get_bloginfo('name');
-			$currency_code = !empty($checkout->currency) ? strtoupper($checkout->currency) : 'N/A';
-			$total = isset($checkout->total_amount) ? number_format($checkout->total_amount / 100, 2) : '0.00';
-			$status = !empty($checkout->status) ? $checkout->status : 'N/A';
-			$order_date = isset($checkout->created_at) ? gmdate('j F Y, g:i a', $checkout->created_at) : gmdate('j F Y, g:i a');
-			$order_notes = ''; // Non disponibile direttamente in checkout
-
-			// Dati cliente
-			$billing_address = is_object($checkout->billing_address) ? $checkout->billing_address : new stdClass();
-			// Corregge il warning: usa direttamente $checkout->shipping_address
-			$shipping_address = is_object($checkout->shipping_address) ? $checkout->shipping_address : new stdClass();
-			if ($checkout->billing_matches_shipping) { // Inizio if
-				$billing_address = $shipping_address;
-			} // Fine if
-
-			$first_name = !empty($checkout->first_name) ? $checkout->first_name : ($billing_address->name ?? '');
-			$last_name = !empty($checkout->last_name) ? $checkout->last_name : '';
-			$billing_email = !empty($checkout->email) ? $checkout->email : '';
-			$billing_company = $billing_address->company ?? '';
-			$billing_address_1 = $billing_address->line_1 ?? '';
-			$billing_address_2 = $billing_address->line_2 ?? '';
-			$billing_city = $billing_address->city ?? '';
-			$billing_state = $billing_address->state ?? '';
-			$billing_postcode = $billing_address->postal_code ?? '';
-			$billing_country = $billing_address->country ?? '';
-
-			$shipping_first_name = $shipping_address->name ?? '';
-			$shipping_last_name = '';
-			$shipping_company = $shipping_address->company ?? '';
-			$shipping_address_1 = $shipping_address->line_1 ?? '';
-			$shipping_address_2 = $shipping_address->line_2 ?? '';
-			$shipping_city = $shipping_address->city ?? '';
-			$shipping_state = $shipping_address->state ?? '';
-			$shipping_postcode = $shipping_address->postal_code ?? '';
-			$shipping_country = $shipping_address->country ?? '';
-
-			// Numero di telefono
-			$phone = $billing_address->phone ?? ($checkout->phone ?? '');
-
-			// Metodo di pagamento
-			$payment_method = isset($checkout->payment_intent->processor_type) ? $checkout->payment_intent->processor_type : 'Sconosciuto';
-
-			// Stato pagamento
-			$paid = ($status === 'paid') ? __('Order Paid', 'notification-for-telegram') : __('Order NOT Paid', 'notification-for-telegram');
-
-			// Informazioni di fatturazione
-			$billing_line = '';
-			if (!empty($billing_first_name) || !empty($billing_last_name)) { // Inizio if
-				$billing_line .= __('BILL TO:', 'notification-for-telegram') . "\r\n";
-				$billing_line .= "$first_name $last_name\r\n";
-			} // Fine if
-			if (!empty($billing_company)) { // Inizio if
-				$billing_line .= __('Company:', 'notification-for-telegram') . " $billing_company\r\n";
-			} // Fine if
-			if (!empty($billing_address_1)) { // Inizio if
-				$billing_line .= __('Address:', 'notification-for-telegram') . " $billing_address_1 $billing_address_2\r\n";
-			} // Fine if
-			if (!empty($billing_city)) { // Inizio if
-				$billing_line .= __('City:', 'notification-for-telegram') . " $billing_city\r\n";
-			} // Fine if
-			if (!empty($billing_state)) { // Inizio if
-				$billing_line .= __('State:', 'notification-for-telegram') . " $billing_state\r\n";
-			} // Fine if
-			if (!empty($billing_postcode)) { // Inizio if
-				$billing_line .= "$billing_postcode\r\n";
-			} // Fine if
-			if (!empty($billing_country)) { // Inizio if
-				$billing_line .= "$billing_country\r\n";
-			} // Fine if
-
-			// Informazioni di spedizione
-			$shipping_line = '';
-			if (!empty($shipping_address_1)) { // Inizio if
-				$shipping_line .= __('SHIP TO:', 'notification-for-telegram') . "\r\n";
-				$shipping_line .= "$shipping_first_name $shipping_last_name\r\n";
-				if (!empty($shipping_company)) { // Inizio if annidato
-					$shipping_line .= __('Company:', 'notification-for-telegram') . " $shipping_company\r\n";
-				} // Fine if annidato
-				$shipping_line .= __('Address:', 'notification-for-telegram') . " $shipping_address_1 $shipping_address_2\r\n";
-				if (!empty($shipping_city)) { // Inizio if annidato
-					$shipping_line .= __('City:', 'notification-for-telegram') . " $shipping_city\r\n";
-				} // Fine if annidato
-				if (!empty($shipping_state)) { // Inizio if annidato
-					$shipping_line .= __('State:', 'notification-for-telegram') . " $shipping_state\r\n";
-				} // Fine if annidato
-				if (!empty($shipping_postcode)) { // Inizio if annidato
-					$shipping_line .= "$shipping_postcode\r\n";
-				} // Fine if annidato
-				if (!empty($shipping_country)) { // Inizio if annidato
-					$shipping_line .= "$shipping_country\r\n";
-				} // Fine if annidato
-			} // Fine if
-
-			// Conteggio ordini completati (allineato con WooCommerce)
-			$order_count = '';
-			$customer_email = $billing_email;
-			if (!empty($customer_email)) { // Inizio if
-				$completed_order_count = 0;
-				$orders = \SureCart\Models\Order::where(['email' => $customer_email])->get();
-				if (!empty($orders)) { // Inizio if annidato
-					foreach ($orders as $order) { // Inizio foreach
-						if ($order->status === 'paid') { // Inizio if annidato
-							$completed_order_count++;
-						} // Fine if annidato
-					} // Fine foreach
-					$order_count = "\xF0\x9F\x94\xA2 " . __('Completed order count:', 'notification-for-telegram') . " $completed_order_count\r\n";
-				} // Fine if annidato
-			} // Fine if
-
-			// Costruzione del messaggio
-			$message .= "\xE2\x9C\x8C " . esc_html__('New order', 'notification-for-telegram') . " #$order_number " . esc_html__('on', 'notification-for-telegram') . " $bloginfo \xE2\x9C\x8C\r\n";
-			$message .= "\xF0\x9F\x91\x89 $first_name $last_name, $billing_email\r\n";
-			$message .= "\xF0\x9F\x92\xB0 $total $currency_code\r\n";
-			$message .= esc_html__($paid, 'notification-for-telegram') . " (" . esc_html($payment_method) . ")\r\n";
-			$message .= esc_html__('Order Status', 'notification-for-telegram') . ": $status\r\n";
-			$message .= esc_html__('Order Date', 'notification-for-telegram') . ": $order_date\r\n";
-
-			// Aggiungi telefono se presente
-			if (!empty($phone)) { // Inizio if
-				$message .= trim($phone) . "\r\n";
-			} // Fine if
-
-			// Aggiungi conteggio ordini completati
-			$message .= $order_count;
-
-			// Articoli
-			$line_items = isset($checkout->line_items->data) ? $checkout->line_items->data : [];
-			if (!empty($line_items)) { // Inizio if
-				$message .= "\r\n------ " . __('ITEMS', 'notification-for-telegram') . " ------\r\n";
-				foreach ($line_items as $item) { // Inizio foreach
-					$item_name = !empty($item->price->product->name) ? $item->price->product->name : 'Unknown Product';
-					if (!empty($item->variant_options)) { // Inizio if annidato
-						$item_name .= ' (' . implode(', ', $item->variant_options) . ')';
-					} // Fine if annidato
-					$quantity = !empty($item->quantity) ? (int) $item->quantity : 1;
-					$line_total = isset($item->total_amount) ? number_format($item->total_amount / 100, 2) : '0.00';
-					$message .= "$quantity x $item_name - $line_total $currency_code\r\n";
-				} // Fine foreach
-				$message .= "-------------------\r\n";
-			} // Fine if
-
-			// Configurazione opzioni (allineato con WooCommerce)
-			$TelegramNotify2 = new nftb_TelegramNotify();
-			$hide_bill = $TelegramNotify2->getValuefromconfig('hide_bill');
-			$hide_ship = $TelegramNotify2->getValuefromconfig('hide_ship');
-			$hide_phone = $TelegramNotify2->getValuefromconfig('hide_phone');
-			$hide_edit_button = $TelegramNotify2->getValuefromconfig('surecart_hide_edit_link');
-
-			// Aggiungi fatturazione se non nascosta
-			if ($hide_bill && !empty($billing_line)) { // Inizio if
-				$message .= "\r\n\xF0\x9F\x93\x9D $billing_line";
-			} // Fine if
-
-			// Aggiungi spedizione se non nascosta
-			if ($hide_ship && !empty($shipping_line)) { // Inizio if
-				$message .= "\r\n\xF0\x9F\x9A\x9A $shipping_line";
-			} // Fine if
-
-			// Aggiungi note dell'ordine
-			if (!empty($order_notes)) { // Inizio if
-				$message .= "\r\n\xF0\x9F\x93\x9D " . __('Order Notes:', 'notification-for-telegram') . " $order_notes\r\n";
-			} // Fine if
-
-			// Estrai l'ID dell'ordine per il link di modifica
-			$order_id = !empty($checkout->order) ? $checkout->order : ($checkout->id ?? '');
-			// Log per debug
-			//error_log('[' . gmdate('Y-m-d H:i:s') . '] ID ordine usato per il link: ' . ($order_id ?: 'N/A'));
-			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Valori disponibili - order: ' . ($checkout->order ?? 'N/A') . ', order_id: ' . ($checkout->order_id ?? 'N/A') . ', order->id: ' . ($checkout->order->id ?? 'N/A') . ', checkout->id: ' . ($checkout->id ?? 'N/A'));
-
-			// Genera il link di modifica
-			$edit_url = !empty($order_id) ? admin_url("admin.php?page=sc-orders&action=edit&id=$order_id") : '';
-			if (empty($order_id)) { // Inizio if
-				//error_log('[' . gmdate('Y-m-d H:i:s') . '] AVVISO: ID ordine non disponibile per checkout #' . ($checkout->id ?? 'N/A'));
-			} // Fine if
-
-
-			
-
-			// Invia messaggio Telegram
-			if ($hide_edit_button) {
-				nftb_send_teleg_message($message);
-			} else {
-			nftb_send_teleg_message($message, __('EDIT ORDER N.', 'notification-for-telegram') . " #$order_number", $edit_url, '');
-			}
-
-			// Log del messaggio
-			//error_log('[' . gmdate('Y-m-d H:i:s') . '] Messaggio generato: ' . $message);
-
-		} catch (Exception $e) { // Inizio catch
-			error_log('[' . gmdate('Y-m-d H:i:s') . '] ERRORE: Eccezione durante l\'elaborazione del checkout #' . ($checkout->id ?? 'N/A') . ': ' . $e->getMessage());
-			return;
-		} // Fine catch
-
-	}	
-} // Fine surecart
 
 //LOW STOCK
 add_action( 'woocommerce_low_stock', 'nftb_woocommerce_low_stock', 10, 1 ); 

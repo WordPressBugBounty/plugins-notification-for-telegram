@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.8.1
-Stable tag: 3.4
+Stable tag: 3.4.2
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -40,9 +40,11 @@ You can enable/disable every notification in the Plugin settings page.
 
 To configure the plugin, you need a valid Telegram API token. Its easy to get starting a Telegram Bot.
 You can learn about obtaining  tokens and generating new ones in 
+
+[my tutorial post] (https://docs.google.com/document/d/1HCa54OhOm9Vm0Jz2AUjQUHK71djzOUQBDZF-9NH7irU/)
+
 [this document](https://core.telegram.org/bots#6-botfather/ "Obtaining tokens and generating new ones")  
 or follow the info in [this post](https://medium.com/shibinco/create-a-telegram-bot-using-botfather-and-get-the-api-token-900ba00e0f39 "Create a Telegram bot using BotFather and Get the Api Token")  
-
 You also need at least one "chatid" number, that is the recipient to the message will be send. To know you personal chatid number, search on telegram app for "@get_id_bot" or  
 [click here ](https://telegram.me/chatIDrobot/ "@chatIDrobot")  OR  another bot @RawDataBot [click here ](https://t.me/RawDataBot)  
 
@@ -272,6 +274,13 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+= 3.4.2 =
+- Added support for Surecart Webhook Endpoint and some events [Beta]: refund.created, refund.succeeded, 
+order.cancelled, order.voided , variant.stock_adjusted , order.fulfilled. order.unfulfilled
+- added function to hide Surecart Tab if the plugin in is not Active o installed
+- Updated CSS to use `.telegram-notify-page` prefix for all styles to prevent conflicts with other plugins and themes (e.g., Elementor).
+- Added: New button in the "Telegram Config" tab to disable plugin CSS loading, preventing conflicts with other themes or plugins (e.g., Elementor).
+- Removed Bootstrap dependency to reduce plugin footprint and avoid potential conflicts in the WordPress admin area.
 
 = 3.4.1 =
 - Added order support for Surecart

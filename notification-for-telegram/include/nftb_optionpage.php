@@ -14,7 +14,7 @@ class nftb_TelegramNotify
 
 
 		//TAB1
-		if ($field == "token_0" || $field == "chatids_" || $field == "notify_donot_strip_tags") {
+		if ($field == "token_0" || $field == "chatids_" || $field == "notify_donot_strip_tags" || $field == "notify_donot_load_css" ) {
 			$prefname = "telegram_notify_option_name";
 		}
 
@@ -36,7 +36,7 @@ class nftb_TelegramNotify
 		}
 
 		//TAB5
-		if ($field == "SURECARTORDERS" || $field == "notify_surecart_order" || $field == "surecart_hide_edit_link" ) {
+		if ($field == "SURECARTORDERS" || $field == "notify_surecart_order" || $field == "surecart_hide_edit_link"  || $field == "Secret_token" || $field == "Signing_Secret"  ) {
 			$prefname = "telegram_notify_option_name_tab5";
 		}
 
@@ -127,112 +127,78 @@ class nftb_TelegramNotify
 
 
 
-	public function telegram_notify_create_admin_page_tabbed()
-	{
-		$this->telegram_notify_options = get_option('telegram_notify_option_name');
-		$this->telegram_notify_options_tab2 = get_option('telegram_notify_option_name_tab2');
-		$this->telegram_notify_options_tab3 = get_option('telegram_notify_option_name_tab3');
-		$this->telegram_notify_options_tab4 = get_option('telegram_notify_option_name_tab4');
-		$this->telegram_notify_options_tab5 = get_option('telegram_notify_option_name_tab5');
+public function telegram_notify_create_admin_page_tabbed()
+{
+    $this->telegram_notify_options = get_option('telegram_notify_option_name');
+    $this->telegram_notify_options_tab2 = get_option('telegram_notify_option_name_tab2');
+    $this->telegram_notify_options_tab3 = get_option('telegram_notify_option_name_tab3');
+    $this->telegram_notify_options_tab4 = get_option('telegram_notify_option_name_tab4');
+    $this->telegram_notify_options_tab5 = get_option('telegram_notify_option_name_tab5');
 
-		$paypal = __('If you like this free plug-in support the developer !!', 'notification-for-telegram') . '<br><br><form action="https://www.paypal.com/donate" method="post" target="_top">
-			<input type="hidden" name="hosted_button_id" value="3ESRFDJUY732E" />
-			<input type="image" src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-			<img alt="" border="0" src="https://www.paypal.com/en_IT/i/scr/pixel.gif" width="1" height="1" />
-			</form>';
-
+    $paypal = __('If you like this free plug-in support the developer !!', 'notification-for-telegram') . '<br><br><form action="https://www.paypal.com/donate" method="post" target="_top">
+        <input type="hidden" name="hosted_button_id" value="3ESRFDJUY732E" />
+        <input type="image" src="https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+        <img alt="" border="0" src="https://www.paypal.com/en_IT/i/scr/pixel.gif" width="1" height="1" />
+        </form>';
 
 ?>
 
-		<div class="wrap telegram_notify_div">
-			<h2>Telegram Notify</h2>
-			<?php echo '<div  style="text-align:center;" ><p>';
+<div class="wrap telegram-notify-page">
+    <h2 class="telegram-notify-heading-h2">Telegram Notify</h2>
+    <?php echo '<div style="text-align:center;" ><p>';
+    printf(
+        __('<div class="telegram-notify-respo"><img class="telegram-notify-bannerfoto" src="' . plugin_dir_url(dirname(__FILE__)) . '../notification-for-telegram/assets/banner-772x250.jpg' . '" ></div>
+        <div class="telegram-notify-respo"><h3 class="telegram-notify-heading-h3"><a href="https://it.wordpress.org/plugins/notification-for-telegram/#reviews" target="_blank">' . __('Please remember to RATE Notification for Telegram!!', 'notification-for-telegram') . '</a></h3>' . $paypal . '</div>'),
+        ''
+    );
+    echo '</p></div>'; ?>
+    <?php settings_errors(); ?>
 
-			printf(__('<div class="respo"><img class="bannerfoto" src="' . plugin_dir_url(dirname(__FILE__)) . '../notification-for-telegram/assets/banner-772x250.jpg' . '" ></div>
-        <div class="respo"><h3><a href="https://it.wordpress.org/plugins/notification-for-telegram/#reviews" target="_blank">' . __('Please remember to RATE Notification for Telegram!!', 'notification-for-telegram') . '</a></h3>' . $paypal . '</div>
-'), '');
+    <?php
+    if (isset($_GET['tab'])) {
+        $active_tab = $_GET['tab'];
+    } else {
+        $active_tab = 'telegram_settings';
+    }
+    ?>
 
-			echo  "</p></div>"; ?>
-			<?php settings_errors();
+    <h2 class="nav-tab-wrapper">
+        <a href="?page=<?php echo $_GET['page']; ?>&tab=telegram_settings" class="telegram-notify-nav-tab <?php echo $active_tab == 'telegram_settings' ? 'nav-tab-active' : ''; ?>">Telegram Config</a>
+        <a href="?page=<?php echo $_GET['page']; ?>&tab=post_settings" class="telegram-notify-nav-tab <?php echo $active_tab == 'post_settings' ? 'nav-tab-active' : ''; ?>">Post / Forms / Users</a>
+        <a href="?page=<?php echo $_GET['page']; ?>&tab=woocommerce" class="telegram-notify-nav-tab <?php echo $active_tab == 'woocommerce' ? 'nav-tab-active' : ''; ?>">Woocomerce</a>
+        <?php if (is_plugin_active('surecart/surecart.php')) { ?>
+        <a href="?page=<?php echo $_GET['page']; ?>&tab=surecart" class="telegram-notify-nav-tab <?php echo $active_tab == 'surecart' ? 'nav-tab-active' : ''; ?>">Surecart</a>
+        <?php } ?>
+        <a href="?page=<?php echo $_GET['page']; ?>&tab=security" class="telegram-notify-nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>">Security</a>
+    </h2>
 
-			//echo nftb_plugupdate_check();
-			//echo nftb_core_check(); 
-
-			//echo $this->getValuefromconfig('order_trigger')."jjj";
-			// $current_screen = get_current_screen();
-			//echo  $current_screen->base;
-			//var_dump($a1 );
-			//echo "kkd".nftb_NotifyA()
-
-
-			//$hello2 = __( 'weeda' , 'notification-for-telegram' );
-
-			//echo $hello2;
-
-			?>
-
-			<?php
-			if (isset($_GET['tab'])) {
-				$active_tab = $_GET['tab'];
-			} else {
-				$active_tab = 'telegram_settings';
-			}
-			?>
-
-
-			<h2 class="nav-tab-wrapper">
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=telegram_settings" class="nav-tab <?php echo $active_tab == 'telegram_settings' ? 'nav-tab-active' : ''; ?>">Telegram Config</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=post_settings" class="nav-tab <?php echo $active_tab == 'post_settings' ? 'nav-tab-active' : ''; ?>">Post / Forms / Users</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=woocommerce" class="nav-tab <?php echo $active_tab == 'woocommerce' ? 'nav-tab-active' : ''; ?>">Woocomerce</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=surecart" class="nav-tab <?php echo $active_tab == 'surecart' ? 'nav-tab-active' : ''; ?>">Surecart</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=security" class="nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>">Security</a>
-
-			</h2>
-
-			<form method="post" action="options.php">
-
-				<?php
-				if ($active_tab == 'telegram_settings') {
-					// settings options group name passed
-					settings_fields('telegram_notify_option_group_tab1');
-					// settings options name passed
-					do_settings_sections('telegram-notify-admin_tab1');
-					submit_button();
-				} elseif ($active_tab == 'post_settings') {
-					// settings options group name passed
-					settings_fields('telegram_notify_option_group_tab2');
-					// settings options name passed
-					do_settings_sections('telegram-notify-admin_tab2');
-					submit_button();
-				} elseif ($active_tab == 'woocommerce') {
-					// settings options group name passed
-					settings_fields('telegram_notify_option_group_tab3');
-					// settings options name passed
-					do_settings_sections('telegram-notify-admin_tab3');
-					submit_button();
-				} elseif ($active_tab == 'security') {
-					// settings options group name passed
-					settings_fields('telegram_notify_option_group_tab4');
-					// settings options name passed
-					do_settings_sections('telegram-notify-admin_tab4');
-					submit_button();
-				} elseif ($active_tab == 'surecart') {
-					// settings options group name passed
-					settings_fields('telegram_notify_option_group_tab5');
-					// settings options name passed
-					do_settings_sections('telegram-notify-admin_tab5');
-					submit_button();
-				}
-
-				?>
-
-
-
-
-
-			</form>
-		</div>
-		<?php }
+    <form method="post" action="options.php" class="telegram-notify-form">
+        <?php
+        if ($active_tab == 'telegram_settings') {
+            settings_fields('telegram_notify_option_group_tab1');
+            do_settings_sections('telegram-notify-admin_tab1');
+            submit_button('Save Settings', 'telegram-notify-button');
+        } elseif ($active_tab == 'post_settings') {
+            settings_fields('telegram_notify_option_group_tab2');
+            do_settings_sections('telegram-notify-admin_tab2');
+            submit_button('Save Settings', 'telegram-notify-button');
+        } elseif ($active_tab == 'woocommerce') {
+            settings_fields('telegram_notify_option_group_tab3');
+            do_settings_sections('telegram-notify-admin_tab3');
+            submit_button('Save Settings', 'telegram-notify-button');
+        } elseif ($active_tab == 'security') {
+            settings_fields('telegram_notify_option_group_tab4');
+            do_settings_sections('telegram-notify-admin_tab4');
+            submit_button('Save Settings', 'telegram-notify-button');
+        } elseif ($active_tab == 'surecart') {
+            settings_fields('telegram_notify_option_group_tab5');
+            do_settings_sections('telegram-notify-admin_tab5');
+            submit_button('Save Settings', 'telegram-notify-button');
+        }
+        ?>
+    </form>
+</div>
+<?php }
 
 
 
@@ -295,6 +261,15 @@ class nftb_TelegramNotify
 			'testbutton', // id
 			__('Test if Token and Chatis works', 'notification-for-telegram'), // title
 			array($this, 'testbutton_callback'), // callback
+			'telegram-notify-admin_tab1', // page
+			'telegram_notify_setting_section_tab1' // section
+		);
+
+	
+		add_settings_field(
+			'notify_donot_load_css', // id
+			__('Disable the plugin\'s CSS to prevent conflicts with other themes or plugins', 'notification-for-telegram'), // title
+			array($this, 'notify_donot_load_css_callback'), // callback
 			'telegram-notify-admin_tab1', // page
 			'telegram_notify_setting_section_tab1' // section
 		);
@@ -734,7 +709,6 @@ class nftb_TelegramNotify
 			'telegram-notify-admin_tab5' // page
 		);
 
-	
 
 	
 	
@@ -754,7 +728,132 @@ class nftb_TelegramNotify
 				'telegram_notify_setting_section_tab5' // section
 			);
 
+			add_settings_field(
+				'WEBHOOK_SETTINGS', // id
+				'WEBHOOK_SETTINGS', // title
+				array($this, 'opendiv'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // section
+			);
+			add_settings_field(
+				'surecart_webhook', // id
+				__('Api and Webhooks Configuration', 'notification-for-telegram'), // title
+				array($this, 'surecart_webhook_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // section
+			);
 
+
+			add_settings_field(
+				'Signing_Secret', // id
+				'Web hook Signing Secret', // title
+				array($this, 'Signing_Secret_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // section
+			);
+
+			add_settings_field(
+				'Secret_token', // id
+				'API Tokens Secret Token', // title
+				array($this, 'Secret_token_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // section
+			);
+
+			add_settings_field(
+				'refund_created', // id
+				__('Hide refund.created Notification', 'notification-for-telegram'), // title
+				array($this, 'refund_created_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+			);
+			
+			add_settings_field(
+				'order_cancelled', // id
+				__('Hide order_cancelled  Notification', 'notification-for-telegram'), // title
+				array($this, 'order_cancelled_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+			);		
+			
+			add_settings_field(
+				'refund_succeeded', // id
+				__('Hide refund.succeeded Notification', 'notification-for-telegram'), // title
+				array($this, 'refund_succeeded_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+			);	
+			
+			add_settings_field(
+				'order_voided', // id
+				__('Hide order.voided  Notification', 'notification-for-telegram'), // title
+				array($this, 'order_voided_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+			);			
+
+			add_settings_field(
+				'variant_stock_adjusted', // id
+				__('Hide variant_stock_adjustedd Notification', 'notification-for-telegram'), // title
+				array($this, 'variant_stock_adjusted_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+				);
+				
+				
+				add_settings_field(
+				'order_fulfilled', // id
+				__('Hide order.fulfilled Notification', 'notification-for-telegram'), // title
+				array($this, 'order_fulfilled_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+				);
+				
+				
+				add_settings_field(
+				'order_unfulfilled', // id
+				__('Hide order.unfulfille Notification', 'notification-for-telegram'), // title
+				array($this, 'order_unfulfilled_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+				);
+				
+				add_settings_field(
+				'fulfillment_updated', // id
+				__('Hide fulfillment.updated Notification', 'notification-for-telegram'), // title
+				array($this, 'fulfillment_updated_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+				);
+				
+				
+				add_settings_field(
+				'order_shipped', // id
+				__('Hide order shipped Notification ( Shipped, Unshipped, Delivered)', 'notification-for-telegram'), // title
+				array($this, 'order_shipped_callback'), // callback
+				'telegram-notify-admin_tab5', // page
+				'telegram_notify_setting_section_tab5' // sectionf
+				);
+				
+				// add_settings_field(
+				// 'order_delivered', // id
+				// __('Hide order.delivered Notification', 'notification-for-telegram'), // title
+				// array($this, 'order_delivered_callback'), // callback
+				// 'telegram-notify-admin_tab5', // page
+				// 'telegram_notify_setting_section_tab5' // sectionf
+				// );
+				
+				
+
+				add_settings_field(
+					'order_paid', // id
+					__('Hide order.paid  Notification', 'notification-for-telegram'), // title
+					array($this, 'order_paid_callback'), // callback
+					'telegram-notify-admin_tab5', // page
+					'telegram_notify_setting_section_tab5' // sectionf
+				);	
+				
+			
 
 	}
 
@@ -772,6 +871,11 @@ class nftb_TelegramNotify
 		if (isset($input['saysomething'])) {
 			$sanitary_values['saysomething'] = esc_textarea($input['saysomething']);
 		}
+
+		if (isset($input['notify_donot_load_css'])) {
+			$sanitary_values['notify_donot_load_css'] = $input['notify_donot_load_css'];
+		}
+
 
 		if (isset($input['notify_donot_strip_tags'])) {
 			$sanitary_values['notify_donot_strip_tags'] = $input['notify_donot_strip_tags'];
@@ -937,6 +1041,64 @@ class nftb_TelegramNotify
 			$sanitary_values['surecart_hide_edit_link'] = $input['surecart_hide_edit_link'];
 		}
 
+		if (isset($input['Signing_Secret'])) {
+			$sanitary_values['Signing_Secret'] = esc_textarea($input['Signing_Secret']);
+		}
+		if (isset($input['Secret_token'])) {
+			$sanitary_values['Secret_token'] = esc_textarea($input['Secret_token']);
+		}
+
+		if (isset($input['refund_created'])) {
+			$sanitary_values['refund_created'] = $input['refund_created'];
+		}
+		
+		if (isset($input['order_cancelled'])) {
+					$sanitary_values['order_cancelled'] = $input['order_cancelled'];
+				}
+
+		if (isset($input['refund_succeeded'])) {
+					$sanitary_values['refund_succeeded'] = $input['refund_succeeded'];
+				}	
+
+		if (isset($input['order_voided'])) {
+					$sanitary_values['order_voided'] = $input['order_voided'];
+				}		
+		
+		if (isset($input['variant_stock_adjusted'])) {
+			$sanitary_values['variant_stock_adjusted'] = $input['variant_stock_adjusted'];
+		}
+
+		if (isset($input['order_fulfilled'])) {
+			$sanitary_values['order_fulfilled'] = $input['order_fulfilled'];
+		}	
+				
+		if (isset($input['order_unfulfilled'])) {
+					$sanitary_values['order_unfulfilled'] = $input['order_unfulfilled'];
+				}		
+
+		if (isset($input['fulfillment_updated'])) {
+			$sanitary_values['fulfillment_updated'] = $input['fulfillment_updated'];
+		
+				}
+		
+		if (isset($input['order_shipped'])) {
+					$sanitary_values['order_shipped'] = $input['order_shipped'];
+				}		
+				
+		if (isset($input['order_delivered'])) {
+					$sanitary_values['order_delivered'] = $input['order_delivered'];
+				}	
+				
+		
+		// if (isset($input['order_unshipped'])) {
+		// 			$sanitary_values['order_unshipped'] = $input['order_unshipped'];
+		// 		}	
+				
+		
+		if (isset($input['order_paid'])) {
+			$sanitary_values['order_paid'] = $input['order_paid'];
+				}		
+
 		return $sanitary_values;
 	}
 
@@ -998,8 +1160,9 @@ class nftb_TelegramNotify
 	public function testbutton_callback()
 	{
 		$plugulr =  plugin_dir_url(__FILE__);
-		printf('<button type="button" id="buttonTest" class="buttonTest" value="' . $plugulr . '">' . __('TEST', 'notification-for-telegram') . '</button>');
+		printf('<button type="button" id="buttonTest"     class="telegram-notify-button-test"  value="' . $plugulr . '">' . __('TEST', 'notification-for-telegram') . '</button>');
 	}
+	
 	public function sleep_time_between_message_2_callback()
 	{
 		printf(
@@ -1008,11 +1171,20 @@ class nftb_TelegramNotify
 		);
 	}
 
+	public function notify_donot_load_css_callback()
+	{
+		printf(
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name[notify_donot_load_css]" id="notify_donot_load_css" value="notify_donot_load_css" %s><span class="telegram-notify-slider"></span>
+</label><label for="notify_donot_load_css">' . __('Enable this option only if you experience CSS conflicts with other themes or plugins (e.g., Elementor). This will prevent the plugin\'s CSS from loading. ', 'notification-for-telegram') . '</label>',
+			(isset($this->telegram_notify_options['notify_donot_load_css']) && $this->telegram_notify_options['notify_donot_load_css'] === 'notify_donot_load_css') ? 'checked' : ''
+		);
+	}
+
 
 	public function notify_donot_strip_tags_callback()
 	{
 		printf(
-			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name[notify_donot_strip_tags]" id="notify_donot_strip_tags" value="notify_donot_strip_tags" %s><span class="slider"></span>
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name[notify_donot_strip_tags]" id="notify_donot_strip_tags" value="notify_donot_strip_tags" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_donot_strip_tags">' . __('if the switch is active, all notification messages will keep any HTML tags if present.<br> if turned off (default and suggested) all html tags will be romoved in the masseges.<br>( Telegram can\'t render HTML ) This setting affects globally ', 'notification-for-telegram') . '</label>',
 			(isset($this->telegram_notify_options['notify_donot_strip_tags']) && $this->telegram_notify_options['notify_donot_strip_tags'] === 'notify_donot_strip_tags') ? 'checked' : ''
 		);
@@ -1024,7 +1196,7 @@ class nftb_TelegramNotify
 	public function notify_newpost_callback()
 	{
 		printf(
-			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_newpost]" id="notify_newpost" value="notify_newpost" %s><span class="slider"></span>
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_newpost]" id="notify_newpost" value="notify_newpost" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_newpost">' . __('Enable nofications for new post pending', 'notification-for-telegram') . '</label>',
 			(isset($this->telegram_notify_options_tab2['notify_newpost']) && $this->telegram_notify_options_tab2['notify_newpost'] === 'notify_newpost') ? 'checked' : ''
 		);
@@ -1033,7 +1205,7 @@ class nftb_TelegramNotify
 	public function notify_cf7_callback()
 	{
 		printf(
-			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_cf7]" id="notify_cf7" value="notify_cf7" %s><span class="slider"></span>
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_cf7]" id="notify_cf7" value="notify_cf7" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_cf7">' . __('Enable nofications in Contact Form 7', 'notification-for-telegram') . '</label>',
 			(isset($this->telegram_notify_options_tab2['notify_cf7']) && $this->telegram_notify_options_tab2['notify_cf7'] === 'notify_cf7') ? 'checked' : ''
 		);
@@ -1118,7 +1290,7 @@ class nftb_TelegramNotify
 	public function notify_ninjaform_callback()
 	{
 		printf(
-			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_ninjaform]" id="notify_ninjaform" value="notify_ninjaform" %s><span class="slider"></span>
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_ninjaform]" id="notify_ninjaform" value="notify_ninjaform" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_ninjaform">' . __('Enable nofications in Ninjaform', 'notification-for-telegram') . '</label>',
 			(isset($this->telegram_notify_options_tab2['notify_ninjaform']) && $this->telegram_notify_options_tab2['notify_ninjaform'] === 'notify_ninjaform') ? 'checked' : ''
 		);
@@ -1138,7 +1310,7 @@ class nftb_TelegramNotify
 				public function notify_wpform_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_wpform]" id="notify_wpform" value="notify_wpform" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_wpform]" id="notify_wpform" value="notify_wpform" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_wpform">' . __('Enable nofications in Wpform', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_wpform']) && $this->telegram_notify_options_tab2['notify_wpform'] === 'notify_wpform') ? 'checked' : ''
 					);
@@ -1157,7 +1329,7 @@ class nftb_TelegramNotify
 				public function notify_ele_form_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_ele_form]" id="notify_ele_form" value="notify_ele_form" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_ele_form]" id="notify_ele_form" value="notify_ele_form" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_ele_form">' . __('Enable nofications in Elementor Form', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_ele_form']) && $this->telegram_notify_options_tab2['notify_ele_form'] === 'notify_ele_form') ? 'checked' : ''
 					);
@@ -1176,7 +1348,7 @@ class nftb_TelegramNotify
 				public function notify_newuser_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_newuser]" id="notify_newuser" value="notify_newuser" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_newuser]" id="notify_newuser" value="notify_newuser" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_newuser">' . __('Enable nofications when New User Registers', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_newuser']) && $this->telegram_notify_options_tab2['notify_newuser'] === 'notify_newuser') ? 'checked' : ''
 					);
@@ -1185,7 +1357,7 @@ class nftb_TelegramNotify
 				public function notify_login_fail_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail]" id="notify_login_fail" value="notify_login_fail" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail]" id="notify_login_fail" value="notify_login_fail" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_login_fail">' . __('Enable nofications when user login fails', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_login_fail']) && $this->telegram_notify_options_tab2['notify_login_fail'] === 'notify_login_fail') ? 'checked' : ''
 					);
@@ -1194,7 +1366,7 @@ class nftb_TelegramNotify
 				public function notify_login_success_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_success]" id="notify_login_success" value="notify_login_success" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_success]" id="notify_login_success" value="notify_login_success" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_login_success">' . __('Enable nofications when when an existing user has logged in', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_login_success']) && $this->telegram_notify_options_tab2['notify_login_success'] === 'notify_login_success') ? 'checked' : ''
 					);
@@ -1206,7 +1378,7 @@ class nftb_TelegramNotify
 
 
 					printf(
-						'<div id="divpro_notify_login_fail_showpass" ><label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_showpass]" id="notify_login_fail_showpass" value="notify_login_fail_showpass" %s><span class="slider"></span>
+						'<div id="divpro_notify_login_fail_showpass" ><label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_showpass]" id="notify_login_fail_showpass" value="notify_login_fail_showpass" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_login_fail_showpass">' . __('Show Clear password in message', 'notification-for-telegram') . '</label></div>',
 						(isset($this->telegram_notify_options_tab2['notify_login_fail_showpass']) && $this->telegram_notify_options_tab2['notify_login_fail_showpass'] === 'notify_login_fail_showpass') ? 'checked' : ''
 					);
@@ -1222,7 +1394,7 @@ class nftb_TelegramNotify
 				public function notify_new_comments_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_new_comments]" id="notify_new_comments" value="notify_new_comments" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_new_comments]" id="notify_new_comments" value="notify_new_comments" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_new_comments">' . __('Enable notifications on new comment', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_new_comments']) && $this->telegram_notify_options_tab2['notify_new_comments'] === 'notify_new_comments') ? 'checked' : ''
 					);
@@ -1232,7 +1404,7 @@ class nftb_TelegramNotify
 				public function notify_new_comments_filter_spam_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_new_comments_filter_spam]" id="notify_new_comments_filter_spam" value="notify_new_comments_filter_spam" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_new_comments_filter_spam]" id="notify_new_comments_filter_spam" value="notify_new_comments_filter_spam" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_new_comments_filter_spam">' . __('Disable notifications if comment is marked as spam', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_new_comments_filter_spam']) && $this->telegram_notify_options_tab2['notify_new_comments_filter_spam'] === 'notify_new_comments_filter_spam') ? 'checked' : ''
 					);
@@ -1243,7 +1415,7 @@ class nftb_TelegramNotify
 
 public function notify_login_fail_showpass_callback() {
 		printf(
-			'<div id="divpro_notify_login_fail_showpass" ><label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_showpass]" id="notify_login_fail_showpass" value="notify_login_fail_showpass" %s><span class="slider"></span>
+			'<div id="divpro_notify_login_fail_showpass" ><label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_showpass]" id="notify_login_fail_showpass" value="notify_login_fail_showpass" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_login_fail_showpass">'.__('Show Clear password in message' , 'notification-for-telegram' ).'</label></div>',
 			( isset( $this->telegram_notify_options_tab2['notify_login_fail_showpass'] ) && $this->telegram_notify_options_tab2['notify_login_fail_showpass'] === 'notify_login_fail_showpass' ) ? 'checked' : ''
 		);
@@ -1277,7 +1449,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_login_fail_goodto_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_goodto]" id="notify_login_fail_goodto" value="notify_login_fail_goodto" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_login_fail_goodto]" id="notify_login_fail_goodto" value="notify_login_fail_goodto" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_login_fail_goodto">' . __('Enable nofication on succes login ', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_login_fail_goodto']) && $this->telegram_notify_options_tab2['notify_login_fail_goodto'] === 'notify_login_fail_goodto') ? 'checked' : ''
 					);
@@ -1287,7 +1459,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_mailchimp_sub_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_mailchimp_sub]" id="notify_mailchimp_sub" value="notify_mailchimp_sub" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_mailchimp_sub]" id="notify_mailchimp_sub" value="notify_mailchimp_sub" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_mailchimp_sub">' . __('Enable nofications', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_mailchimp_sub']) && $this->telegram_notify_options_tab2['notify_mailchimp_sub'] === 'notify_mailchimp_sub') ? 'checked' : ''
 					);
@@ -1308,7 +1480,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_mailchimp_unsub_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_mailchimp_unsub]" id="notify_mailchimp_unsub" value="notify_mailchimp_unsub" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_mailchimp_unsub]" id="notify_mailchimp_unsub" value="notify_mailchimp_unsub" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_mailchimp_unsub">' . __('Enable nofications', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab2['notify_mailchimp_unsub']) && $this->telegram_notify_options_tab2['notify_mailchimp_unsub'] === 'notify_mailchimp_unsub') ? 'checked' : ''
 					);
@@ -1367,7 +1539,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_order_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_order]" id="notify_woocomerce_order" value="notify_woocomerce_order" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_order]" id="notify_woocomerce_order" value="notify_woocomerce_order" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_order">' . __('Enable nofications on new Orders', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_order']) && $this->telegram_notify_options_tab3['notify_woocomerce_order'] === 'notify_woocomerce_order') ? 'checked' : ''
 					);
@@ -1385,7 +1557,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_checkoutfield_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_checkoutfield]" id="notify_woocomerce_checkoutfield" value="notify_woocomerce_checkoutfield" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_checkoutfield]" id="notify_woocomerce_checkoutfield" value="notify_woocomerce_checkoutfield" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_checkoutfield">' . __('Create a input field in wc check-out page for Telegram nickname. (not required)', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_checkoutfield']) && $this->telegram_notify_options_tab3['notify_woocomerce_checkoutfield'] === 'notify_woocomerce_checkoutfield') ? 'checked' : ''
 					);
@@ -1450,7 +1622,7 @@ public function notify_login_fail_showpass_callback() {
 				public function price_with_tax_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[price_with_tax]" id="price_with_tax" value="price_with_tax" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[price_with_tax]" id="price_with_tax" value="price_with_tax" %s><span class="telegram-notify-slider"></span>
 </label><label for="price_with_tax">' . __('Include tax in product price', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['price_with_tax']) && $this->telegram_notify_options_tab3['price_with_tax'] === 'price_with_tax') ? 'checked' : ''
 					);
@@ -1468,7 +1640,7 @@ public function notify_login_fail_showpass_callback() {
 				public function hide_bill_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_bill]" id="hide_bill" value="hide_bill" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_bill]" id="hide_bill" value="hide_bill" %s><span class="telegram-notify-slider"></span>
 </label><label for="hide_bill">' . __('Include Billing info in message', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['hide_bill']) && $this->telegram_notify_options_tab3['hide_bill'] === 'hide_bill') ? 'checked' : ''
 					);
@@ -1486,7 +1658,7 @@ public function notify_login_fail_showpass_callback() {
 				public function hide_ship_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_ship]" id="hide_ship" value="hide_ship" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_ship]" id="hide_ship" value="hide_ship" %s><span class="telegram-notify-slider"></span>
 </label><label for="hide_ship">' . __('Include Shipping info in message', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['hide_ship']) && $this->telegram_notify_options_tab3['hide_ship'] === 'hide_ship') ? 'checked' : ''
 					);
@@ -1505,7 +1677,7 @@ public function notify_login_fail_showpass_callback() {
 				public function hide_phone_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_phone]" id="hide_phone" value="hide_phone" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_phone]" id="hide_phone" value="hide_phone" %s><span class="telegram-notify-slider"></span>
 </label><label for="hide_phone">' . __('Include Phone in message', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['hide_phone']) && $this->telegram_notify_options_tab3['hide_phone'] === 'hide_phone') ? 'checked' : ''
 					);
@@ -1541,7 +1713,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_order_change_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_order_change]" id="notify_woocomerce_order_change" value="notify_woocomerce_order_change" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_order_change]" id="notify_woocomerce_order_change" value="notify_woocomerce_order_change" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_order_change">' . __('Enable nofications when any order status changes', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_order_change']) && $this->telegram_notify_options_tab3['notify_woocomerce_order_change'] === 'notify_woocomerce_order_change') ? 'checked' : ''
 					);
@@ -1561,7 +1733,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_lowstock_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_lowstock]" id="notify_woocomerce_lowstock" value="notify_woocomerce_lowstock" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_lowstock]" id="notify_woocomerce_lowstock" value="notify_woocomerce_lowstock" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_lowstock">' . __('Enable nofications when a product is low stock conditions', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_lowstock']) && $this->telegram_notify_options_tab3['notify_woocomerce_lowstock'] === 'notify_woocomerce_lowstock') ? 'checked' : ''
 					);
@@ -1588,7 +1760,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_addtocart_item_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_addtocart_item]" id="notify_woocomerce_addtocart_item" value="notify_woocomerce_addtocart_item" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_addtocart_item]" id="notify_woocomerce_addtocart_item" value="notify_woocomerce_addtocart_item" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_addtocart_item">' . __('Enable nofications when a product is added to the cart', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_addtocart_item']) && $this->telegram_notify_options_tab3['notify_woocomerce_addtocart_item'] === 'notify_woocomerce_addtocart_item') ? 'checked' : ''
 					);
@@ -1607,7 +1779,7 @@ public function notify_login_fail_showpass_callback() {
 				public function notify_woocomerce_remove_cart_item_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_remove_cart_item]" id="notify_woocomerce_remove_cart_item" value="notify_woocomerce_remove_cart_item" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[notify_woocomerce_remove_cart_item]" id="notify_woocomerce_remove_cart_item" value="notify_woocomerce_remove_cart_item" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_woocomerce_remove_cart_item">' . __('Enable nofications when product is removed from the cart', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['notify_woocomerce_remove_cart_item']) && $this->telegram_notify_options_tab3['notify_woocomerce_remove_cart_item'] === 'notify_woocomerce_remove_cart_item') ? 'checked' : ''
 					);
@@ -1627,7 +1799,7 @@ public function notify_login_fail_showpass_callback() {
 				public function hide_edit_link_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_edit_link]" id="hide_edit_link" value="hide_edit_link" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_edit_link]" id="hide_edit_link" value="hide_edit_link" %s><span class="telegram-notify-slider"></span>
 </label><label for="hide_edit_link">' . __('hide the EDIT ORDER link in the WooCommerce order confirmation message ', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab3['hide_edit_link']) && $this->telegram_notify_options_tab3['hide_edit_link'] === 'hide_edit_link') ? 'checked' : ''
 					);
@@ -1649,7 +1821,7 @@ public function notify_login_fail_showpass_callback() {
 				{
 					$ff = " | " . nftb_next_cron_time('nftb_cron_hook');
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab4[notify_update]" id="notify_update" value="notify_update" %s><span class="slider"></span>
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab4[notify_update]" id="notify_update" value="notify_update" %s><span class="telegram-notify-slider"></span>
 </label><label for="notify_update">Enable Automatic message ' . $ff . '</label>',
 						(isset($this->telegram_notify_options_tab4['notify_update']) && $this->telegram_notify_options_tab4['notify_update'] === 'notify_update') ? 'checked' : ''
 					);
@@ -1699,13 +1871,13 @@ public function notify_login_fail_showpass_callback() {
 
 
 					printf(
-						'<div class="rigaplug"><div class="box"><select  name="telegram_notify_option_name[notify_update_time]" id="notify_update_time" ><option value="0" if (!$notify_update_time_selected)  { echo " selected "}>SELECT</option>
+						'<div class="rigaplug"><div class="telegram-notify-box" ><select  name="telegram_notify_option_name[notify_update_time]" id="notify_update_time" ><option value="0" if (!$notify_update_time_selected)  { echo " selected "}>SELECT</option>
   <option value="1"  ' . $sel1 . '  >' . __('ONE MINUTE', 'notification-for-telegram') . '</option>
   <option value="2" ' . $sel2 . ' >' . __('ONE HOUR', 'notification-for-telegram') . '</option>
   <option value="3" ' . $sel3 . ' >' . __('DAILY', 'notification-for-telegram') . '</option>
   <option value="4" ' . $sel4 . ' >' . __('WEEKLY', 'notification-for-telegram') . '</option>
   <option value="5" ' . $sel5 . ' >' . __('MONTHLY', 'notification-for-telegram') . '</option>
-  </select></div><button type="button" id="buttoncronset" class="buttoncronset" value="' . $plugulr . '">' . __('SET INTERVAL', 'notification-for-telegram') . '</button>
+  </select></div><button type="button" id="buttoncronset" class="telegram-notify-button-cronset" value="' . $plugulr . '">' . __('SET INTERVAL', 'notification-for-telegram') . '</button>
  <label for="notify_update_time">' . __('Choose an interval and press <b>set button</b> to activate the cron', 'notification-for-telegram') . '</label></div>',
 						isset($this->telegram_notify_options['notify_update_time']) ? esc_attr($this->telegram_notify_options['notify_update_time']) : ''
 					);
@@ -1720,16 +1892,98 @@ public function notify_login_fail_showpass_callback() {
 				public function cronbutton_callback()
 				{
 					$plugulr =  plugin_dir_url(__FILE__);
-					printf('<button type="button" id="buttoncron" class="buttoncront" value="' . $plugulr . '">' . __('Delete & Clean Telegram Cronjob ', 'notification-for-telegram') . '</button>');
+					printf('<button type="button" id="buttoncron" class="telegram-notify-button-cront" value="' . $plugulr . '">' . __('Delete & Clean Telegram Cronjob ', 'notification-for-telegram') . '</button>');
 				}
 
 	//tab5
+	public function surecart_webhook_callback(){
+		
+		$webhook_url = $GLOBALS['surecart_webhook_url'] ?? rest_url('surecart-webhook/v1/receive');
+		$urlsure = 'https://app.surecart.com/webhook_endpoints';
+		// Stampa o usa l'URL		
+
+
+	printf(
+    '<div class="surecart-webhook-guide" style="border: 1px solid #e0e0e0; padding: 15px;" ><ol>
+        <li><strong>Create a Webhook Endpoint in SureCart</strong>:
+            <ul>
+                <li>Log in to the SureCart dashboard at <a href="%s" target="_blank">%s</a>.</li>
+                <li>Navigate to  <strong>Webhook Endpoints</strong>.</li>
+                <li>Click the button <strong>+ New Webhook Endpoint</strong>.</li>
+                <li>Enter the URL of your WordPress endpoint, e.g., <code>'.$webhook_url.'</code>.</li>
+                <li>Save the endpoint. SureCart will generate a unique <strong>Signing Secret</strong> for this endpoint, we need in point (3)</li>
+            </ul>
+        </li>
+        <li><strong>Select Events to Receive</strong>:
+            <ul>
+                <li>In the webhook management section, select the created endpoint.</li>
+                <li>Click <strong>Select Events</strong> and choose the events you want to receive, among those implemented in the plugin, which are: 
+<br><br>
+
+                    <ul style="display: flex; flex-wrap: wrap; gap: 20px; list-style-type: circle; padding-left: 20px;">
+                        <li>refund.created</li>
+                        <li>refund.succeeded</li>
+                        <li>order.cancelled</li>
+                        <li>order.voided</li>
+                        <li>variant.stock_adjusted</li>
+                        <li>order.fulfilled</li>
+                        <li>order.unfulfilled</li>
+                    </ul>
+                </li>
+                <li>Confirm the selection. These events will be sent to your endpoint when triggered.</li>
+            </ul>
+        </li>
+        <li><strong>Retrieve and Configure the Signing Secret</strong>:
+            <ul>
+                <li>In the SureCart dashboard, go to the endpoint’s details page.</li>
+                <li>search for <strong>Signing Secret</strong>.</li>
+                <li>Copy the <strong>Signing Secret</strong>.</li>
+                <li>Paste in the below field <strong>Web hook Signing Secret</strong>.</li>
+               
+            </ul>
+        </li>
+        <li><strong>Test the Webhook</strong>:
+            <ul>
+                <li>In the SureCart dashboard, use the <strong>Test</strong> option to send a test event to your endpoint.</li>
+                <li>If it works, you should receive a confirmation message on Telegram
+
+</li>
+            
+            </ul>
+        </li>
+
+		<li><strong>Retrieve and Configure the API Secret Token</strong>:
+    <ul style="display: flex; flex-wrap: wrap; gap: 20px; list-style-type: disc; padding-left: 20px;">
+        <li>In the SureCart dashboard, go to the API page.</li>
+        <li>Click on Secret Token</li>
+        <li>Copy the <strong>API Secret Token</strong>.</li>
+        <li>Insert the <strong>API Secret Token</strong> into the <strong> API Tokens Secret Token</strong> field below in this plugin settings page.</li>
+    </ul>
+</li>
+
+
+    </ol>
+    <h3>Notes:</h3>
+    <ul>
+        <li><strong>Security</strong>: Always use HTTPS for your endpoint and verify the signature with the Signing Secret to prevent attacks (e.g., replay attacks).</li>
+        <li><strong>Debugging</strong>: Enable WordPress debugging (<code>WP_DEBUG</code>) to track errors and check the SureCart webhook logs for event delivery details.</li>
+    </ul></div>',
+    esc_url('https://app.surecart.com'), // SureCart dashboard URL (href)
+    esc_html('app.surecart.com'), // SureCart dashboard URL (text)
+    esc_html(rest_url('surecart-webhook/v1/receive')), // Webhook endpoint URL
+    esc_url('https://developer.surecart.com'), // SureCart documentation URL (href)
+    esc_html('developer.surecart.com') // SureCart documentation URL (text)
+);
+}
+	
 				
 	public function notify_surecart_order_callback()
 	{
+	
+
 		printf(
-			'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab5[notify_surecart_order]" id="notify_surecart_order" value="notify_surecart_order" %s><span class="slider"></span>
-</label><label for="notify_surecart_order">' . __('Enable nofications on new Orders', 'notification-for-telegram') . '</label>',
+			'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[notify_surecart_order]" id="notify_surecart_order" value="notify_surecart_order" %s><span class="telegram-notify-slider"></span>
+</label><label for="notify_surecart_order">' . __('Enable nofications on new Orders ( NO webhook endpoint needed)', 'notification-for-telegram') . '</label>',
 			(isset($this->telegram_notify_options_tab5['notify_surecart_order']) && $this->telegram_notify_options_tab5['notify_surecart_order'] === 'notify_surecart_order') ? 'checked' : ''
 		);
 		
@@ -1748,8 +2002,8 @@ public function notify_login_fail_showpass_callback() {
 	public function surecart_hide_edit_link_callback()
 				{
 					printf(
-						'<label class="switch"><input type="checkbox" name="telegram_notify_option_name_tab5[surecart_hide_edit_link]" id="surecart_hide_edit_link" value="surecart_hide_edit_link" %s><span class="slider"></span>
-</label><label for="surecart_hide_edit_link">' . __('hide the EDIT ORDER link in the Surecart order confirmation message ', 'notification-for-telegram') . '</label>',
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[surecart_hide_edit_link]" id="surecart_hide_edit_link" value="surecart_hide_edit_link" %s><span class="telegram-notify-slider"></span>
+</label><label for="surecart_hide_edit_link">' . __('hide the EDIT ORDER link button ', 'notification-for-telegram') . '</label>',
 						(isset($this->telegram_notify_options_tab5['surecart_hide_edit_link']) && $this->telegram_notify_options_tab5['surecart_hide_edit_link'] === 'surecart_hide_edit_link') ? 'checked' : ''
 					);
 					if (is_plugin_active('surecart/surecart.php')) {
@@ -1763,7 +2017,236 @@ public function notify_login_fail_showpass_callback() {
 					}
 				}
 
-	
+
+				
+				
+				public function Secret_token_callback()
+				{
+					printf(
+						'<textarea class="large-text22" rows="2"  cols="60" name="telegram_notify_option_name_tab5[Secret_token]" id="Secret_token">%s</textarea> &nbsp;<a href="https://app.surecart.com/api_tokens" target="_blank" >' . __('Where get app.surecart.com api_tokens', 'notification-for-telegram') . '</a>',
+						isset($this->telegram_notify_options_tab5['Secret_token']) ? esc_attr($this->telegram_notify_options_tab5['Secret_token']) : ''
+					);
+				}
+				public function Signing_Secret_callback()
+				{
+					printf(
+						'<textarea class="large-text22" rows="2"  cols="60" name="telegram_notify_option_name_tab5[Signing_Secret]" id="Signing_Secret">%s</textarea> &nbsp;<a href="https://app.surecart.com/webhook_endpoints" target="_blank" >' . __('Where get app.surecart.com webhook_endpoints', 'notification-for-telegram') . '</a>',
+						isset($this->telegram_notify_options_tab5['Signing_Secret']) ? esc_attr($this->telegram_notify_options_tab5['Signing_Secret']) : ''
+					);
+				}
+
+				public function refund_created_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[refund_created]" id="refund_created" value="refund_created" %s><span class="telegram-notify-slider"></span>
+</label><label for="refund_created">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['refund_created']) && $this->telegram_notify_options_tab5['refund_created'] === 'refund_created') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("refund_created").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("refund_created").disabled = true;
+				document.querySelector("label[for=refund_created]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+public function order_cancelled_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_cancelled]" id="order_cancelled" value="order_cancelled" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_cancelled">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_cancelled']) && $this->telegram_notify_options_tab5['order_cancelled'] === 'order_cancelled') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_cancelled").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_cancelled").disabled = true;
+				document.querySelector("label[for=order_cancelled]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+public function refund_succeeded_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[refund_succeeded]" id="refund_succeeded" value="refund_succeeded" %s><span class="telegram-notify-slider"></span>
+</label><label for="refund_succeeded">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['refund_succeeded']) && $this->telegram_notify_options_tab5['refund_succeeded'] === 'refund_succeeded') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("refund_succeeded").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("refund_succeeded").disabled = true;
+				document.querySelector("label[for=refund_succeeded]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+				
+				
+public function order_voided_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_voided]" id="order_voided" value="order_voided" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_voided">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_voided']) && $this->telegram_notify_options_tab5['order_voided'] === 'order_voided') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_voided").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_voided").disabled = true;
+				document.querySelector("label[for=order_voided]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+				
+				public function variant_stock_adjusted_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[variant_stock_adjusted]" id="variant_stock_adjusted" value="variant_stock_adjusted" %s><span class="telegram-notify-slider"></span>
+</label><label for="variant_stock_adjusted">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['variant_stock_adjusted']) && $this->telegram_notify_options_tab5['variant_stock_adjusted'] === 'variant_stock_adjusted') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("variant_stock_adjusted").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("variant_stock_adjusted").disabled = true;
+				document.querySelector("label[for=variant_stock_adjusted]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+public function order_fulfilled_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_fulfilled]" id="order_fulfilled" value="order_fulfilled" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_fulfilled">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_fulfilled']) && $this->telegram_notify_options_tab5['order_fulfilled'] === 'order_fulfilled') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_fulfilled").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_fulfilled").disabled = true;
+				document.querySelector("label[for=order_fulfilled]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+				
+				
+public function order_unfulfilled_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_unfulfilled]" id="order_unfulfilled" value="order_unfulfilled" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_unfulfilled">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_unfulfilled']) && $this->telegram_notify_options_tab5['order_unfulfilled'] === 'order_unfulfilled') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_unfulfilled").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_unfulfilled").disabled = true;
+				document.querySelector("label[for=order_unfulfilled]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+				
+				
+
+public function fulfillment_updated_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[fulfillment_updated]" id="fulfillment_updated" value="fulfillment_updated" %s><span class="telegram-notify-slider"></span>
+</label><label for="fulfillment_updated">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['fulfillment_updated']) && $this->telegram_notify_options_tab5['fulfillment_updated'] === 'fulfillment_updated') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("fulfillment_updated").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("fulfillment_updated").disabled = true;
+				document.querySelector("label[for=fulfillment_updated]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+		
+public function order_shipped_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_shipped]" id="order_shipped" value="order_shipped" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_shipped">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_shipped']) && $this->telegram_notify_options_tab5['order_shipped'] === 'order_shipped') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_shipped").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_shipped").disabled = true;
+				document.querySelector("label[for=order_shipped]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+public function order_delivered_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_delivered]" id="order_delivered" value="order_delivered" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_delivered">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_delivered']) && $this->telegram_notify_options_tab5['order_delivered'] === 'order_delivered') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_delivered").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_delivered").disabled = true;
+				document.querySelector("label[for=order_delivered]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+
+														
+public function order_paid_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab5[order_paid]" id="order_paid" value="order_paid" %s><span class="telegram-notify-slider"></span>
+</label><label for="order_paid">' . __('', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab5['order_paid']) && $this->telegram_notify_options_tab5['order_paid'] === 'order_paid') ? 'checked' : ''
+					);
+					if (is_plugin_active('surecart/surecart.php')) {
+						?><script>
+				document.getElementById("order_paid").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("order_paid").disabled = true;
+				document.querySelector("label[for=order_paid]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+		
+																
+		
+
+
+
+
 
 			}
 			if (is_admin())
