@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.8.1
-Stable tag: 3.4.2
+Stable tag: 3.4.3
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -274,6 +274,10 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+
+= 3.4.3 =
+Added a minimal CSS when Main CSS is disabled 
+
 = 3.4.2 =
 - Added support for Surecart Webhook Endpoint and some events [Beta]: refund.created, refund.succeeded, 
 order.cancelled, order.voided , variant.stock_adjusted , order.fulfilled. order.unfulfilled
