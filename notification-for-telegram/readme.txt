@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.8.1
-Stable tag: 3.4.4
+Stable tag: 3.4.5
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -274,6 +274,9 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+
+= 3.4.5 =
+Removed ver stripping from asset URLs for better cache handling and plugin compatibility.
 
 = 3.4.4 =
 Better logic to add the minimal CSS when main CSS is disable

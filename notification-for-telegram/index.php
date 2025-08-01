@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4.4
+ * Version: 3.4.5
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -25,46 +25,34 @@ if (file_exists($nftb_robotfile_path)) {
     include($nftb_robotfile_path);
 } 
 
+add_action('init', 'nftb_init_method');
 
 function nftb_init_method() {
 // LOAD JQUERY SCRIPTS
     $telegram_notify_option = get_option('telegram_notify_option_name');
     $notify_donot_load_css = isset($telegram_notify_option['notify_donot_load_css']) ? $telegram_notify_option['notify_donot_load_css'] : false;
-    
 
 //Enqueue Admin CSS on Job Board Settings page only
 if ( isset( $_GET['page'] ) && $_GET['page'] == 'telegram-notify'  ) {
     
 	if ( !$notify_donot_load_css  ) {
 	// Enqueue Core Admin Styles 
-    wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/mystyle.css', __FILE__ ));
+    	wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/mystyle.css', __FILE__ ));
+	
 	} else {
-		
 		// se la selezione notify_donot_load_css attiva Enqueue Minimal CSS Styles 
 		wp_enqueue_style( 'nftb_plugin_script2', plugins_url ( '/nftb_minimal.css', __FILE__ ));
-
-
-	}
-      
- 
+	} 
 wp_enqueue_script('nftb_plugin_script', plugins_url('/myjs.js', __FILE__), array('jquery') );
 
-    } 
-       
+    }       
 }    
 
 
-//add_action('admin_enqueue_scripts', 'nftb_init_method');
-add_action('init', 'nftb_init_method');
 
-//trim css per carcaricrae il mio 
-function nftb_trim_css_version($src) {
-    if (strpos($src, 'ver=')) {
-        $src = remove_query_arg('ver', $src);
-    }
-    return $src;
-}
-add_filter('style_loader_src', 'nftb_trim_css_version', 9999);
+
+
+
 
 // Activation 
 register_activation_hook( __FILE__, 'nftb_plugin_activate' );
