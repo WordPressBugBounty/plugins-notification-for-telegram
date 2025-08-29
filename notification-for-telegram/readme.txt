@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.8.1
-Stable tag: 3.4.5
+Stable tag: 3.4.6
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -274,6 +274,11 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+
+= 3.4.6 =
+Added product sku in the notification when a product is added to the cart (maxivillus request)
+Added product sku in the notification when a product is removed fromn the cart (maxivillus request)
+Added option to hide the product list in notification messages and display only the item count. (mouring request)
 
 = 3.4.5 =
 Removed ver stripping from asset URLs for better cache handling and plugin compatibility.

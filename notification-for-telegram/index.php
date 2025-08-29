@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4.5
+ * Version: 3.4.6
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -538,8 +538,9 @@ function nftb_detect_new_order_on_checkout($order_id)
 
 			get_woocommerce_currency_symbol();
 			$linea = "";
-
+			$numprod = 0;
 			foreach ($order->get_items() as $item_id => $item) {
+				$numprod = $numprod +1;
 				$extrafiledhook = "";
 				$lineatemp = "";
 				//Get the product ID        
@@ -653,44 +654,49 @@ function nftb_detect_new_order_on_checkout($order_id)
 
 			$defmessage = $defmessage . $order_count;
 
-			//retrocompatibilta per vecchia funziome
-			if (function_exists('nftb_order_before_items')) {
 
-				$defmessage = $defmessage . "\r\n";
-				$defmessage = $defmessage . nftb_order_before_items($order_id);
-				$defmessage = $defmessage . "\r\n";
+			if (!$TelegramNotify2->getValuefromconfig('hide_prods_list')) {
+
+				//retrocompatibilta per vecchia funziome
+				if (function_exists('nftb_order_before_items')) {
+
+					$defmessage = $defmessage . "\r\n";
+					$defmessage = $defmessage . nftb_order_before_items($order_id);
+					$defmessage = $defmessage . "\r\n";
+				}
+
+				// HOOKS nftb_order_before_items_hook
+				$nftb_order_before_items_hook = apply_filters('nftb_order_before_items_hook', $order_id);
+				if (has_filter('nftb_order_before_items_hook')) {
+					$defmessage = $defmessage . $nftb_order_before_items_hook;
+				}
+
+
+
+
+				$defmessage .= "\r\n\r\n------ " . __('ITEMS', 'notification-for-telegram') . " ------\r\n";
+
+				$defmessage = $defmessage . $linea;
+				$defmessage = $defmessage . "-------------------";
+
+
+				//retrocompatibilta per vecchia funziome
+				if (function_exists('nftb_order_after_items')) {
+
+					$defmessage = $defmessage . "\r\n\r\n";
+					$defmessage = $defmessage . nftb_order_after_items($order_id);
+					$defmessage = $defmessage . "\r\n";
+				}
+
+				// HOOKS nftb_order_after_items_hook
+				$nftb_order_after_items_hook = apply_filters('nftb_order_after_items_hook', $order_id);
+				if (has_filter('nftb_order_after_items_hook')) {
+					$defmessage = $defmessage . $nftb_order_after_items_hook;
+				}
+
+			} else {
+				$defmessage = $defmessage . "\r\n". __('🧺 Number of products in the order: ', 'notification-for-telegram'). $numprod."\r\n";
 			}
-
-			// HOOKS nftb_order_before_items_hook
-			$nftb_order_before_items_hook = apply_filters('nftb_order_before_items_hook', $order_id);
-			if (has_filter('nftb_order_before_items_hook')) {
-				$defmessage = $defmessage . $nftb_order_before_items_hook;
-			}
-
-
-
-
-			$defmessage .= "\r\n\r\n------ " . __('ITEMS', 'notification-for-telegram') . " ------\r\n";
-
-			$defmessage = $defmessage . $linea;
-			$defmessage = $defmessage . "-------------------";
-
-
-			//retrocompatibilta per vecchia funziome
-			if (function_exists('nftb_order_after_items')) {
-
-				$defmessage = $defmessage . "\r\n\r\n";
-				$defmessage = $defmessage . nftb_order_after_items($order_id);
-				$defmessage = $defmessage . "\r\n";
-			}
-
-			// HOOKS nftb_order_after_items_hook
-			$nftb_order_after_items_hook = apply_filters('nftb_order_after_items_hook', $order_id);
-			if (has_filter('nftb_order_after_items_hook')) {
-				$defmessage = $defmessage . $nftb_order_after_items_hook;
-			}
-
-
 
 			$hidebilll = "";
 			$hidebilll = $TelegramNotify2->getValuefromconfig('hide_bill');
@@ -863,10 +869,19 @@ if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_addtocart_item')) {
 	// If the WC_product Object is not defined globally
 	
    	 $product = wc_get_product( $product_id);
+	 // Get the SKU
+	$sku = $product->get_sku();
+
+	// Check if SKU is empty
+	if ( empty( $sku ) ) {
+	 $skuuu = "";
+	} else {
+		$skuuu = " | " . esc_html( $sku ). "";
+	}
 	
 
 	$myprodname = $product->get_name();
-    nftb_send_teleg_message(__("NEW product in the cart", "notification-for-telegram") . " " . $bloginfo . ". | " . $myprodname . " " . __("Qty", "notification-for-telegram") . " " . $quantity);
+    nftb_send_teleg_message(__("NEW product in the cart", "notification-for-telegram") . " " . $bloginfo . ".". $skuuu ." | " . $myprodname . " " . __("Qty", "notification-for-telegram") . " " . $quantity);
 
   }
 }
@@ -901,9 +916,19 @@ if ($TelegramNotify2->getValuefromconfig('notify_woocomerce_remove_cart_item')) 
 
 	// Get the product name
 	$myprodname= $product->get_name();
+
+	// Get the SKU
+	$sku = $product->get_sku();
+
+	// Check if SKU is empty
+	if ( empty( $sku ) ) {
+	 $skuuu = "";
+	} else {
+		$skuuu = " | " . esc_html( $sku ). "";
+	}
 	
 
-	nftb_send_teleg_message(__("removed from the cart", "notification-for-telegram") . " " . $bloginfo . ". | " . $myprodname );
+	nftb_send_teleg_message(__("removed from the cart", "notification-for-telegram") .  " " . $bloginfo . ".". $skuuu . " | " . $myprodname );
   
   }
 }

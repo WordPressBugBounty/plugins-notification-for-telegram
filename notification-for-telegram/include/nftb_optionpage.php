@@ -25,7 +25,7 @@ class nftb_TelegramNotify
 
 
 		//TAB3
-		if ($field == "ORDERS" || $field == "notify_woocomerce_order" || $field == "order_trigger" || $field == "price_with_tax" || $field == "hide_bill" || $field == "hide_ship" || $field == "hide_phone" || $field == "WOO PREFERENCES"  || $field == "notify_woocomerce_checkoutfield" || $field == "notify_woocomerce_checkoutext" || $field == "notify_woocomerce_order_change"  || $field == "notify_woocomerce_addtocart_item" || $field == "notify_woocomerce_remove_cart_item" || $field == "hide_edit_link") {
+		if ($field == "ORDERS" || $field == "notify_woocomerce_order" || $field == "order_trigger" || $field == "price_with_tax" || $field == "hide_bill" || $field == "hide_ship" || $field == "hide_phone" || $field == "WOO PREFERENCES"  || $field == "notify_woocomerce_checkoutfield" || $field == "notify_woocomerce_checkoutext" || $field == "notify_woocomerce_order_change"  || $field == "notify_woocomerce_addtocart_item" || $field == "notify_woocomerce_remove_cart_item" || $field == "hide_edit_link"   || $field == "hide_prods_list" ) {
 			$prefname = "telegram_notify_option_name_tab3";
 		}
 
@@ -540,6 +540,14 @@ public function telegram_notify_create_admin_page_tabbed()
 		);
 
 		add_settings_field(
+			'hide_prods_list', // id
+			__('Hide products list.', 'notification-for-telegram'), // title
+			array($this, 'hide_prods_list_callback'), // callback
+			'telegram-notify-admin_tab3', // page
+			'telegram_notify_setting_section_tab3' // section
+		);
+
+		add_settings_field(
 			'hide_bill', // id
 			__('Billing info', 'notification-for-telegram'), // title
 			array($this, 'hide_bill_callback'), // callback
@@ -970,6 +978,10 @@ public function telegram_notify_create_admin_page_tabbed()
 
 		if (isset($input['price_with_tax'])) {
 			$sanitary_values['price_with_tax'] = $input['price_with_tax'];
+		}
+
+		if (isset($input['hide_prods_list'])) {
+			$sanitary_values['hide_prods_list'] = $input['hide_prods_list'];
 		}
 
 		if (isset($input['hide_phone'])) {
@@ -1636,6 +1648,28 @@ public function notify_login_fail_showpass_callback() {
 			</script><?php
 					}
 				}
+
+
+				public function hide_prods_list_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab3[hide_prods_list]" id="hide_prods_list" value="hide_prods_list" %s><span class="telegram-notify-slider"></span>
+</label><label for="hide_prods_list">' . __('Hide the product list in the notification message and only display the item count.
+
+', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab3['hide_prods_list']) && $this->telegram_notify_options_tab3['hide_prods_list'] === 'hide_prods_list') ? 'checked' : ''
+					);
+					if (is_plugin_active('woocommerce/woocommerce.php')) {
+						?><script>
+				document.getElementById("hide_prods_list").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("hide_prods_list").disabled = true;
+				document.querySelector("label[for=hide_prods_list]").innerHTML = "<?php _e('Plug not Active or Installed', 'notification-for-telegram') ?>";
+			</script><?php
+					}
+				}
+
 
 				public function hide_bill_callback()
 				{
