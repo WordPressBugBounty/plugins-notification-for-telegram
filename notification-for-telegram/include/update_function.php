@@ -1,40 +1,5 @@
 <?php
 
-
-
-
-
-// function nftb_after_install_or_update( $upgrader_object, $options ) {
-//     // Controlla se l'operazione riguarda i plugin
-//     if ( isset( $options['type'] ) && 'plugin' === $options['type'] ) {
-//         // Nome del plugin da controllare
-//         $plugin_slug = 'notification-for-telegram/index.php';
-
-//         // Per aggiornamenti
-//         if ( isset( $options['action'] ) && 'update' === $options['action'] ) {
-//             if ( isset( $options['plugins'] ) && in_array( $plugin_slug, $options['plugins'], true ) ) {
-//                 error_log('Notification for Telegram Plugin Updated: ' . $plugin_slug);
-//                 nftb_optimize_nftb_plugin_database();
-//             }
-//         }
-
-//         // Per installazioni
-//         if ( isset( $options['action'] ) && 'install' === $options['action'] ) {
-//             error_log('Notification for Telegram Plugin Installed: ' . $plugin_slug);
-//             nftb_optimize_nftb_plugin_database();
-//         }
-//     }
-// }
-
-// add_action( 'upgrader_process_complete', 'nftb_after_install_or_update', 20, 2 );
-
-
-
-
-
-
-
-
 function nftb_optimize_nftb_plugin_database() {
     global $wpdb;
   

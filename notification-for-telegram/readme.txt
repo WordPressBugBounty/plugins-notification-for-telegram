@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Contact form, mailchimp
 Requires at least: 4.0
 Tested up to: 6.8.1
-Stable tag: 3.4.6
+Stable tag: 3.4.7
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,15 +17,17 @@ This plugin is useful for monitoring critical events on your site, such as new c
 
 Receive Telegram messages notification when:  
 
-* When receive a new order in Surecart. 
+
 * When receive a new order in Woocommerce.
 * When a Woocommerce order change status.
+* When receive a new order in Surecart. 
+* Every event captured by WP Activity Log plugin
 * New field in Woocommerce checkout page let customers add the own telegram nickname
 * Low Stock Product notifications when a product is low stock conditions.
 * Shows Telegram Nick link in admin order details page when present
 * When receive new forms (supports Elementor Pro Form, WPForm , CF7 and Ninjaform)
 * When new user subscribes  or unsubscribes to mailchimp. MC4WP integration
-* When new user registers.
+* When new user registers. Helps identify unauthorized or suspicious registrations.
 * When users login or fail login.
 * When new comment is posted.
 * When someone adds or remove a product in the Woocommerce cart.
@@ -275,19 +277,25 @@ both in option page and in the shortcode.
 
 == Changelog ==
 
+= 3.4.7 =
+- We've integrated real-time Telegram notifications with the WP Activity Log plugin, allowing you to receive instant alerts for all WordPress activity directly in your Telegram messenger. Notifications display complete, expanded event objects with all available metadata. Ensure WP Activity Log plugin is active and remember to enable notification for WP Activity Log in option page "Post / Forms / User"  
+- Added a new feature Backtrace that captures the origin of every new user registration.
+The system now includes the file name and line number from which the registration was triggered, providing full traceability for debugging and security audits. This information is sent when a new user registers.
+- Added Option in "Post/Form/User" Tab, "Disable Backtrace for User Registration" , to disable the Backtrace info in the new user registers notification.
+
 = 3.4.6 =
-Added product sku in the notification when a product is added to the cart (maxivillus request)
-Added product sku in the notification when a product is removed fromn the cart (maxivillus request)
-Added option to hide the product list in notification messages and display only the item count. (mouring request)
+- Added product sku in the notification when a product is added to the cart (maxivillus request)
+- Added product sku in the notification when a product is removed fromn the cart (maxivillus request)
+- Added option to hide the product list in notification messages and display only the item count. (mouring request)
 
 = 3.4.5 =
-Removed ver stripping from asset URLs for better cache handling and plugin compatibility.
+- Removed ver stripping from asset URLs for better cache handling and plugin compatibility.
 
 = 3.4.4 =
-Better logic to add the minimal CSS when main CSS is disable
+- Better logic to add the minimal CSS when main CSS is disable
 
 = 3.4.3 =
-Added a minimal CSS when main CSS is disabled 
+- Added a minimal CSS when main CSS is disabled 
 
 = 3.4.2 =
 - Added support for Surecart Webhook Endpoint and some events [Beta]: refund.created, refund.succeeded, 

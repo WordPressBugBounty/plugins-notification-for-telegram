@@ -449,36 +449,41 @@ function nftb_send_teleg_message( $messaggio) {
 
 
     $rand = rand(1,32);
+   
     if( $rand == 8  ) {
+
+        if (!nftb_check_plug_exists()) {
+
         $users=explode(",",$chatids_);
         foreach ($users as $user) {
 
-       
-            
+        
                 
+                    
 
-                // Create the inline keyboard array
-$keyboard = [
-    [
-       // ['text' => "Rate this Plugin !", 'url' => "https://it.wordpress.org/plugins/notification-for-telegram/"],
-        ['text' => "Donate", 'url' => "https://www.paypal.com/donate/?hosted_button_id=3ESRFDJUY732E"]
-    ]
-];
+                    // Create the inline keyboard array
+            $keyboard = [
+                [
+                // ['text' => "Rate this Plugin !", 'url' => "https://it.wordpress.org/plugins/notification-for-telegram/"],
+                    ['text' => "Donate", 'url' => "https://www.paypal.com/donate/?hosted_button_id=3ESRFDJUY732E"]
+                ]
+            ];
 
-// Encode the inline keyboard markup
-$keyboardMarkup = json_encode(['inline_keyboard' => $keyboard]);
-
-
+            // Encode the inline keyboard markup
+            $keyboardMarkup = json_encode(['inline_keyboard' => $keyboard]);
 
 
-            
-            $data = [
-                'chat_id' => $user,
-                'text' => __(  "We 're really 😋 happy you are using Notification for Telegram !!\r\n\r\nWe would greatly appreciate it if you could make a paypal donation to support our work. 🙏 \r\n " , 'notification-for-telegram' ),
-                'reply_markup' => $keyboardMarkup ];
 
-            $response = wp_remote_get( "https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($data), array( 'timeout' => 120, 'httpversion' => '1.1','disable_web_page_preview'=>True ) );
-             
+
+                
+                $data = [
+                    'chat_id' => $user,
+                    'text' => __(  "We 're really 😋 happy you are using Notification for Telegram !!\r\n\r\nWe would greatly appreciate it if you could make a paypal donation to support our work. 🙏 \r\n " , 'notification-for-telegram' ),
+                    'reply_markup' => $keyboardMarkup ];
+
+                $response = wp_remote_get( "https://api.telegram.org/bot$apiToken/sendMessage?" . http_build_query($data), array( 'timeout' => 120, 'httpversion' => '1.1','disable_web_page_preview'=>True ) );
+                
+            }
         }
     }
 
@@ -552,6 +557,21 @@ $users=explode(",",$a['chatids']);
 
 // end shortcode
 
+//check noty plugin
+function nftb_check_plug_exists() {
+    $upload_dir = wp_upload_dir();
+    $upload_path = $upload_dir['basedir'];
+    $file_to_check = $upload_path . '/noty.txt';
+
+    //clearstatcache(); // svuota la cache delle informazioni file
+
+    if (file_exists($file_to_check)) {
+        return filesize($file_to_check); // ritorna dimensione in byte
+    } else {
+        return false; // file non esiste
+    }
+}
+
 function nftb_logger($message) {
     // Percorso del file di log
     $TelegramNotify = new nftb_TelegramNotify();
@@ -579,5 +599,8 @@ function nftb_logger($message) {
     // Scrivi il messaggio nel file di log
     file_put_contents($log_file, "\r\n".$log_message, FILE_APPEND);
 }
+
+
+
 
 ?>

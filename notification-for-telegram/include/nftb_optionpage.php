@@ -19,7 +19,7 @@ class nftb_TelegramNotify
 		}
 
 		//TAB2
-		if ($field == "POST" || $field == "notify_newpost" || $field == "FORMS" || $field == "notify_cf7" || $field ==  "notify_cf7_exclude" || $field == "notify_ninjaform" || $field == "notify_wpform" || $field == "notify_ele_form" || $field == "LOGIN" || $field == "notify_newuser"   || $field == "notify_login_success" || $field == "notify_login_fail" || $field == "notify_login_fail_showpass" || $field == "notify_login_fail_goodto"  || $field == "MAILCHIMP" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_unsub" || $field == "notify_new_comments" || $field == "notify_new_comments_filter_spam") {
+		if ($field == "POST" || $field == "notify_newpost" || $field == "FORMS" || $field == "notify_cf7" || $field ==  "notify_cf7_exclude" || $field == "notify_ninjaform" || $field == "notify_wpform" || $field == "notify_ele_form" || $field == "LOGIN" || $field == "notify_newuser"   || $field == "notify_login_success" || $field == "notify_login_fail" || $field == "notify_login_fail_showpass" || $field == "notify_login_fail_goodto"  || $field == "MAILCHIMP" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_sub" || $field == "notify_mailchimp_unsub" || $field == "notify_new_comments" || $field == "notify_new_comments_filter_spam" || $field == "wpactivitylog" || $field == "notify_newuser_no_backtrace" ) {
 			$prefname = "telegram_notify_option_name_tab2";
 		}
 
@@ -388,13 +388,19 @@ public function telegram_notify_create_admin_page_tabbed()
 
 		add_settings_field(
 			'notify_newuser', // id
-			__('User Registration', 'notification-for-telegram'), // title
+			__('New User Registration', 'notification-for-telegram'), // title
 			array($this, 'notify_newuser_callback'), // callback
 			'telegram-notify-admin_tab2', // page
 			'telegram_notify_setting_section_tab2' // section
 		);
 
-
+		add_settings_field(
+			'notify_newuser_no_backtrace', // id
+			__('Backtrace info when New User is created', 'notification-for-telegram'), // title
+			array($this, 'notify_newuser_no_backtrace_callback'), // callback
+			'telegram-notify-admin_tab2', // page
+			'telegram_notify_setting_section_tab2' // section
+		);
 
 
 
@@ -473,6 +479,22 @@ public function telegram_notify_create_admin_page_tabbed()
 			'notify_mailchimp_unsub', // id
 			__('Send a notification when new user Unsubscribes from mailchimp', 'notification-for-telegram'), // title
 			array($this, 'notify_mailchimp_unsub_callback'), // callback
+			'telegram-notify-admin_tab2', // page
+			'telegram_notify_setting_section_tab2' // section
+		);
+
+		add_settings_field(
+			'MWP_Activity_Log', // id
+			'WP Activity Log', // title
+			array($this, 'opendiv'), // callback
+			'telegram-notify-admin_tab2', // page
+			'telegram_notify_setting_section_tab2' // section
+		);
+		
+		add_settings_field(
+			'wpactivitylog', // id
+			__('Sends WordPress activity alerts directly to Telegram whenever events are logged in the WP Activity Log dashboard.', 'notification-for-telegram'), // title
+			array($this, 'wpactivitylog_callback'), // callback
 			'telegram-notify-admin_tab2', // page
 			'telegram_notify_setting_section_tab2' // section
 		);
@@ -918,6 +940,11 @@ public function telegram_notify_create_admin_page_tabbed()
 			$sanitary_values['notify_newuser'] = $input['notify_newuser'];
 		}
 
+		if (isset($input['notify_newuser_no_backtrace'])) {
+			$sanitary_values['notify_newuser_no_backtrace'] = $input['notify_newuser_no_backtrace'];
+		}
+
+
 		if (isset($input['notify_login_fail'])) {
 			$sanitary_values['notify_login_fail'] = $input['notify_login_fail'];
 		}
@@ -955,9 +982,11 @@ public function telegram_notify_create_admin_page_tabbed()
 			$sanitary_values['notify_mailchimp_unsub'] = $input['notify_mailchimp_unsub'];
 		}
 
-		if (isset($input['notify_mailchimp_unsub'])) {
-			$sanitary_values['notify_mailchimp_unsub'] = $input['notify_mailchimp_unsub'];
+	
+		if (isset($input['wpactivitylog'])) {
+			$sanitary_values['wpactivitylog'] = $input['wpactivitylog'];
 		}
+
 
 
 		if (isset($input['woocomerce_chatids']) && nftb_NotifyA()) {
@@ -1366,6 +1395,17 @@ public function telegram_notify_create_admin_page_tabbed()
 					);
 				}
 
+
+				public function notify_newuser_no_backtrace_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[notify_newuser_no_backtrace]" id="notify_newuser_no_backtrace" value="notify_newuser_no_backtrace" %s><span class="telegram-notify-slider"></span>
+</label><label for="notify_newuser_no_backtrace">' . __('Adds information about the file and line number where the registration was triggered—helping to detect unauthorized or hidden entry points that can bypass captcha and create fake users (e.g., from plugins, themes, or injected code).', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab2['notify_newuser_no_backtrace']) && $this->telegram_notify_options_tab2['notify_newuser_no_backtrace'] === 'notify_newuser_no_backtrace') ? 'checked' : ''
+					);
+				}
+
+
 				public function notify_login_fail_callback()
 				{
 					printf(
@@ -1508,6 +1548,25 @@ public function notify_login_fail_showpass_callback() {
 					}
 				}
 
+
+				public function wpactivitylog_callback()
+				{
+					printf(
+						'<label class="telegram-notify-switch"><input type="checkbox" name="telegram_notify_option_name_tab2[wpactivitylog]" id="wpactivitylog" value="wpactivitylog" %s><span class="telegram-notify-slider"></span>
+</label><label for="wpactivitylog">' . __('Enable nofications', 'notification-for-telegram') . '</label>',
+						(isset($this->telegram_notify_options_tab2['wpactivitylog']) && $this->telegram_notify_options_tab2['wpactivitylog'] === 'wpactivitylog') ? 'checked' : ''
+					);
+
+					if (is_plugin_active('wp-security-audit-log/wp-security-audit-log.php')) {
+						?><script>
+				document.getElementById("wpactivitylog").enable = true;
+			</script><?php
+					} else { ?><script>
+				document.getElementById("wpactivitylog").disabled = true;
+				document.querySelector("label[for=wpactivitylog]").innerHTML = '<?php _e('WP Activity Log not Active or not Installed ! install <a href="https://wordpress.org/plugins/wp-security-audit-log/" target="_blank" >Now</a> ', 'notification-for-telegram') ?>';
+			</script><?php
+					}
+				}
 
 
 				//TAB 3 
