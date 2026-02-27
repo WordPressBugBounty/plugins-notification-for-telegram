@@ -1,10 +1,10 @@
 === Notification for Telegram ===
 Contributors: rainafarai
 Donate link: https://www.paypal.com/paypalme/rainafarai
-Tags: Telegram, Woocommerce ,Contact form, mailchimp
+Tags: Telegram, Woocommerce ,Notification, mcp, ai, abilities-api
 Requires at least: 4.0
-Tested up to: 6.8.1
-Stable tag: 3.4.7
+Tested up to: 6.9.1
+Stable tag: 3.5
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -39,7 +39,6 @@ Receive Telegram messages notification when:
 
 You can enable/disable every notification in the Plugin settings page.
  
-
 To configure the plugin, you need a valid Telegram API token. Its easy to get starting a Telegram Bot.
 You can learn about obtaining  tokens and generating new ones in 
 
@@ -57,13 +56,33 @@ this plugin is relying on a 3rd party service to geolocate the Ip address https:
 https://ip-api.com/docs/legal  to see the services’ a terms of use and/or privacy policies
 
 
-MESSAGES TRANSLATION
+== AI & MCP Compatible ==
+
+This plugin supports the **WordPress Abilities API** and is compatible with 
+**MCP (Model Context Protocol)** — the standard that allows AI agents like 
+Claude, ChatGPT, and others to interact with WordPress autonomously.
+
+If the **Abilities API** and **MCP Adapter** plugins are installed, any 
+authorized AI agent can automatically discover and use the 
+**Send Telegram Message** ability — no extra configuration needed.
+
+**What an AI can do with this plugin:**
+* Send a Telegram message with custom text
+* Add an inline button with label and URL
+* Override the default chat ID
+
+= Requirements for MCP =
+* WordPress 6.9+
+* Plugin: Abilities API (WordPress/abilities-api)
+* Plugin: MCP Adapter (WordPress/mcp-adapter)
+
+== MESSAGES TRANSLATION == 
 To translate Telegram messages, use WPML or Loco Translate. All notification strings are now translatable.
 Go to Loco Translate → Plugins → Notification for Telegram to add your translations.
 For WPML, ensure String Translation is enabled to modify notification texts.
 
 
-SHORTCODE EXAMPLE
+== SHORTCODE EXAMPLE == 
 
 `[telegram_mess  message="Im so happy" chatids="0000000," token="000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" showsitename="1" showip="1" showcity="1" ]`
 
@@ -276,6 +295,11 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+= 3.5 =
+- Added: MCP (Model Context Protocol) compatibility
+- Added: WordPress Abilities API integration
+- AI agents can now send Telegram notifications autonomously
+- Fixed PHP 8.2+ deprecation warning on Plugin Option Page. Deprecated: Creation of dynamic property nftb_TelegramNotify::$telegram_notify_options_tab
 
 = 3.4.7 =
 - We've integrated real-time Telegram notifications with the WP Activity Log plugin, allowing you to receive instant alerts for all WordPress activity directly in your Telegram messenger. Notifications display complete, expanded event objects with all available metadata. Ensure WP Activity Log plugin is active and remember to enable notification for WP Activity Log in option page "Post / Forms / User"  

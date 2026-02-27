@@ -7,6 +7,11 @@ class nftb_TelegramNotify
 {
 	//private $telegram_notify_options;
 	public $telegram_notify_option;
+	public $telegram_notify_options;
+    public $telegram_notify_options_tab2;
+    public $telegram_notify_options_tab3;
+    public $telegram_notify_options_tab4;
+    public $telegram_notify_options_tab5;
 
 	public function getValuefromconfig($field)
 	{
