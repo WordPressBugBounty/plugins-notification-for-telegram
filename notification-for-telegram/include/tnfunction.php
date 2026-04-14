@@ -1,4 +1,8 @@
 <?php
+
+
+add_action( 'nftb_send_message', 'nftb_send_teleg_message', 10, 4 );
+
 //17
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -31,48 +35,10 @@ function get_order_phone($order_id) {
 
 }
 
-function cleanString2($in,$offset=null)
-{
-    $out = trim($in);
-    if (!empty($out))
-    {
-        $entity_start = strpos($out,'&',$offset);
-        if ($entity_start === false)
-        {
-            // ideal
-            return $out;   
-        }
-        else
-        {
-            $entity_end = strpos($out,';',$entity_start);
-            if ($entity_end === false)
-            {
-                 return $out;
-            }
-            // zu lang um eine entity zu sein
-            else if ($entity_end > $entity_start+7)
-            {
-                 // und weiter gehts
-                 $out = cleanString($out,$entity_start+1);
-            }
-            // gottcha!
-            else
-            {
-                 $clean = substr($out,0,$entity_start);
-                 $subst = substr($out,$entity_start+1,1);
-                 // &scaron; => "s" / &#353; => "_"
-                 $clean .= ($subst != "#") ? $subst : " ";
-                 $clean .= substr($out,$entity_end+1);
-                 // und weiter gehts
-                 $out = cleanString($clean,$entity_start+1);
-            }
-        }
-    }
-    return $out;
-}
 
 
-function cleanString($in,$offset=null) {
+
+function nftb_cleanString($in,$offset=null) { 
     $TelegramNotify = new nftb_TelegramNotify();
 	$notify_donot_strip_tags=  $TelegramNotify->getValuefromconfig('notify_donot_strip_tags'); 
 	
@@ -164,29 +130,62 @@ function nftb_checkout_field( $checkout ) {
 	}
 }
 
-//Crea Telegram meta per prdine
+
+// Crea Telegram meta per ordine
 add_action( 'woocommerce_checkout_update_order_meta', 'nftb_update_order_meta' );
 
 function nftb_update_order_meta( $order_id ) {
 
+    if ( isset( $_POST['nftb_telegramnickname'] ) ) {
 
-    if ( ! empty( $_POST['nftb_telegramnickname'] ) ) {
-        update_post_meta( $order_id, 'Telegram', sanitize_text_field( $_POST['nftb_telegramnickname'] ) );
+        // Rimuove slash aggiunti da WP
+        $telegram = wp_unslash( $_POST['nftb_telegramnickname'] );
+
+        // Sanitizzazione base
+        $telegram = sanitize_text_field( $telegram );
+
+        // Rimuove eventuale @ iniziale
+        $telegram = ltrim( $telegram, '@' );
+
+        // Validazione stretta Telegram (5-32 caratteri, lettere numeri underscore)
+        if ( preg_match( '/^[a-zA-Z0-9_]{5,32}$/', $telegram ) ) {
+
+            // [FIX] Uso WC Order API invece di update_post_meta
+            // per compatibilità con HPOS (High-Performance Order Storage)
+            $order = wc_get_order( $order_id );
+            if ( $order ) {
+                $order->update_meta_data( 'Telegram', $telegram );
+                $order->save();
+            }
+        }
     }
 }
 
 
+// Aggiunge Telegram nel backend ordine
+add_action(
+    'woocommerce_admin_order_data_after_billing_address',
+    'nftb__field_display_admin_order_meta',
+    10,
+    1
+);
 
-////aggiungi alback end il telegram
-add_action( 'woocommerce_admin_order_data_after_billing_address', 'nftb__field_display_admin_order_meta', 10, 1 );
+function nftb__field_display_admin_order_meta( $order ) {
 
-function nftb__field_display_admin_order_meta($order){
+    // [FIX] Uso WC Order API invece di get_post_meta per compatibilità HPOS
+    $tlgruser = $order->get_meta( 'Telegram', true );
 
-$tlgruser = get_post_meta( $order->id, 'Telegram', true );
- if ( ! empty( $tlgruser ) ) {
-        echo '<p><strong>'.__('Telegram').':</strong> <a href="https://t.me/'.$tlgruser.'">' .$tlgruser  . '</a></p>';
+    if ( ! empty( $tlgruser ) ) {
+
+        $url  = esc_url( 'https://t.me/' . $tlgruser );
+        $user = esc_html( $tlgruser );
+
+        echo '<p><strong>' . esc_html__( 'Telegram', 'textdomain' ) . ':</strong> 
+                <a href="' . $url . '" target="_blank" rel="noopener noreferrer">' 
+                    . $user . 
+                '</a>
+              </p>';
     }
-   
 }
 
 
@@ -195,104 +194,78 @@ $tlgruser = get_post_meta( $order->id, 'Telegram', true );
 add_action('admin_notices', 'nftb_admin_notice');
 
 
+
+add_action( 'admin_notices', 'nftb_admin_notice' );
 function nftb_admin_notice() {
     global $current_user;
     $user_id = $current_user->ID;
 
     // Mostra solo agli amministratori
-    if (!current_user_can('administrator')) {
-        return; // Esce dalla funzione se l'utente non è un amministratore
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
     }
 
-    // Recupera tutti i meta dati per l'utente
-    $all_meta_for_user = get_user_meta($user_id);
-   //  delete_user_meta($user_id, 'nftb_ignore_notyyy');
-    // Gestione dell'ultima data di "ignora notifica"
-    $ignore_date = isset($all_meta_for_user['nftb_ignore_notyyy'][0]) ? $all_meta_for_user['nftb_ignore_notyyy'][0] : '';
+    $all_meta_for_user = get_user_meta( $user_id );
+    $ignore_date = isset( $all_meta_for_user['nftb_ignore_notyyy'][0] ) ? $all_meta_for_user['nftb_ignore_notyyy'][0] : '';
 
-    // Calcola i giorni trascorsi
-    if (!empty($ignore_date)) {
-        $datetime1 = date_create(); // Data attuale
-        $datetime2 = date_create($ignore_date); // Data salvata nei meta dati
-        $interval = date_diff($datetime1, $datetime2);
-        $days = $interval->format('%d'); // Differenza in giorni
+    if ( ! empty( $ignore_date ) ) {
+        $datetime1 = date_create();
+        $datetime2 = date_create( $ignore_date );
+        $interval  = date_diff( $datetime1, $datetime2 );
+        $days      = $interval->format( '%d' );
     } else {
-        $days = 31; // Imposta a 31 giorni se il valore non esiste o è vuoto
+        $days = 61;
     }
 
-    global $pagenow;
-    $current_rel_uri = add_query_arg(NULL, NULL);
+    if ( $days > 60 ) {
 
-    // Mostra la notifica solo se sono passati più di 30 giorni
-    if ($days > 30) {
+        // [FIX] Genera URL con nonce per il link "Hide Notice"
+        $dismiss_url = wp_nonce_url(
+            add_query_arg( 'nftb_nag_ignore', '0' ),
+            'nftb_nag_ignore'
+        );
+
         echo '<div class="updated"><p>';
         printf(
-            __('<img src="https://ps.w.org/notification-for-telegram/assets/icon-128x128.jpg?rev=2383266" ><h3><a href="https://it.wordpress.org/plugins/notification-for-telegram/#reviews" target="_blank">%s</a><h3><a href="%s">%s</a>'),
-            __('Please remember to RATE Notification for Telegram!!', 'notification-for-telegram'),
-            '?page=telegram-notify&nftb_nag_ignore=0',
-            __('Hide Notice for now', 'notification-for-telegram')
+            '<img src="https://ps.w.org/notification-for-telegram/assets/icon-128x128.jpg?rev=2383266"><h3><a href="https://it.wordpress.org/plugins/notification-for-telegram/#reviews" target="_blank">%s</a></h3><a href="%s">%s</a>',
+            esc_html__( 'Hey! 👋 Notification for Telegram is 100% free and takes real work to maintain. If it\'s saving you time, a quick ⭐⭐⭐⭐⭐ review means the world to us — it only takes 30 seconds!', 'notification-for-telegram' ),
+            esc_url( $dismiss_url ),  // [FIX] nonce url + escape
+            esc_html__( 'Hide Notice for 60 Days', 'notification-for-telegram' )
         );
-        echo "</p></div>";
+        echo '</p></div>';
     }
 }
-
-
-
-// function nftb_admin_notice() {
-//     global $current_user;
-//     $user_id = $current_user->ID;
-
-//     // SHOW ONLY to ADMINS
-//     if (!current_user_can('administrator')) {
-//         return;  // Exit the function if the user is not an administrator
-//     }
-
-//     // Retrieve all user meta
-//     $all_meta_for_user = get_user_meta($user_id);
-
-//         //  delete_user_meta($user_id, 'nftb_ignore_notyyy');
-//         // echo "jjj". $all_meta_for_user['nftb_ignore_notyyy'][0];
-
-    
-
-//     // Check if the 'nftb_ignore_notyyy' key exists and is not empty
-//     if (isset($all_meta_for_user['nftb_ignore_notyyy'][0]) && !empty($all_meta_for_user['nftb_ignore_notyyy'][0])) {
-//         $datetime1 = date_create(); // now
-//         $datetime2 = date_create($all_meta_for_user['nftb_ignore_notyyy'][0]);
-//         $interval = date_diff($datetime1, $datetime2);
-//         $days = $interval->format('%d'); // the time between your last login and now in days
-//     } else {
-//         $days = 31; // Default to 31 days if the key doesn't exist or is empty
-//     }
-
-//     global $pagenow;
-//     $current_rel_uri = add_query_arg(NULL, NULL);
-
-//     // Show notice if the key is not set or if it's been more than 30 days
-//     if ($days > 30) {
-//         echo '<div class="updated"><p>';
-//         printf(__('<img src="https://ps.w.org/notification-for-telegram/assets/icon-128x128.jpg?rev=2383266" ><h3><a href="https://it.wordpress.org/plugins/notification-for-telegram/#reviews" target="_blank">'.__('Please remeber to RATE Notification for Telegram!!' , 'notification-for-telegram' ).'</a><h3><a href="%1$s">'.__('Hide Notice for now' , 'notification-for-telegram' ).'</a>'), '?page=telegram-notify&nftb_nag_ignore=0');
-//             echo  "</p></div>";
-//     }
-// }
 
 
 
 //dismiss button
 add_action('admin_init', 'nftb_nag_ignore');
-function nftb_nag_ignore() {
 
-       
-	global $current_user;
-        $user_id = $current_user->ID;
-        /* If user clicks to ignore the notice, add that to their user meta */
-        if ( isset($_GET['nftb_nag_ignore']) && '0' == $_GET['nftb_nag_ignore'] ) {
-        
-         add_user_meta($user_id, 'nftb_ignore_notyyy', date('d.m.Y',strtotime("-0 days")), true);
-          
-     
-	}
+function nftb_nag_ignore() { 
+    global $current_user;
+    $user_id = $current_user->ID;
+
+    //delete_user_meta( $user_id, 'nftb_ignore_notyyy' ); // RIMUOVI DOPO IL TEST
+
+    if ( ! isset( $_GET['nftb_nag_ignore'] ) || '0' !== $_GET['nftb_nag_ignore'] ) {
+        return;
+    }
+
+    // [FIX 1] Capability check
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    // [FIX 2] Nonce check
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'nftb_nag_ignore' ) ) {
+        wp_die( 'Security check failed.' );
+    }
+
+    add_user_meta( $user_id, 'nftb_ignore_notyyy', date( 'd.m.Y' ), true );
 }
+
+
+
 
 
 
@@ -346,6 +319,22 @@ add_action( 'mc4wp_form_subscribed', function( MC4WP_Form $form ) {
 
 
 
+//check noty plugin
+function nftb_check_plug_exists() {
+    $upload_dir = wp_upload_dir();
+    $upload_path = $upload_dir['basedir'];
+    $file_to_check = $upload_path . '/noty.txt';
+
+    //clearstatcache(); // svuota la cache delle informazioni file
+
+    if (file_exists($file_to_check)) {
+        return filesize($file_to_check); // ritorna dimensione in byte
+    } else {
+        return false; // file non esiste
+    }
+}
+
+
 //mailchiim unsuscribe
 add_action( 'mc4wp_form_unsubscribed', function(MC4WP_Form $form) {
 
@@ -383,7 +372,7 @@ function nftb_send_teleg_message( $messaggio) {
 	//preapra le variabili  $message , $urlname, $urllink, $eventualechtid
 	//ex  nftb_send_teleg_message( $defmessage, 'EDIT ORDER N. '.$order_id ,$editurl,'');
 		
-    $messaggio = cleanString($arg_list[0]);
+    $messaggio = nftb_cleanString($arg_list[0]);
     
     //Ordina le variabili 
     if (isset($arg_list[3])) {    $eventualechtid = $arg_list[3]; }
@@ -556,50 +545,6 @@ $users=explode(",",$a['chatids']);
 
 
 // end shortcode
-
-//check noty plugin
-function nftb_check_plug_exists() {
-    $upload_dir = wp_upload_dir();
-    $upload_path = $upload_dir['basedir'];
-    $file_to_check = $upload_path . '/noty.txt';
-
-    //clearstatcache(); // svuota la cache delle informazioni file
-
-    if (file_exists($file_to_check)) {
-        return filesize($file_to_check); // ritorna dimensione in byte
-    } else {
-        return false; // file non esiste
-    }
-}
-
-function nftb_logger($message) {
-    // Percorso del file di log
-    $TelegramNotify = new nftb_TelegramNotify();
-	$token =  $TelegramNotify->getValuefromconfig('token_0');
-    $log_file = WP_CONTENT_DIR . '/'.$token .'.log';
-    $clean_log = $message;
-
-
-
-  
-    $clean_log = preg_replace('/[\p{C}\p{S}\p{P}\p{M}\p{Z}\p{L}&&[^\.\d]]/u', '', $message);
-    // Formattazione del messaggio con data/ora
-
-
-    $clean_log = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($match) {
-        return preg_replace('/[^.]/u', '', $match[0]);
-    }, $message);
-
-    $clean_log = preg_replace('/\r\n(?=\d+\.\d+\.\d+\.\d+)/', '', $clean_log);
-    $clean_log = str_replace(array("\r", "\n"), '', $clean_log );
-
-
-    $log_message = '[' . date('Y-m-d H:i:s') . '] ' . $clean_log . PHP_EOL;
-
-    // Scrivi il messaggio nel file di log
-    file_put_contents($log_file, "\r\n".$log_message, FILE_APPEND);
-}
-
 
 
 

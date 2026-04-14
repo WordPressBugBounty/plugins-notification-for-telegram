@@ -1,10 +1,10 @@
 === Notification for Telegram ===
 Contributors: rainafarai
 Donate link: https://www.paypal.com/paypalme/rainafarai
-Tags: Telegram, Woocommerce ,Notification, mcp, ai, abilities-api
+Tags: Telegram, Woocommerce ,Notification, mcp, ai
 Requires at least: 4.0
 Tested up to: 6.9.1
-Stable tag: 3.5
+Stable tag: 3.5.1
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -42,12 +42,25 @@ You can enable/disable every notification in the Plugin settings page.
 To configure the plugin, you need a valid Telegram API token. Its easy to get starting a Telegram Bot.
 You can learn about obtaining  tokens and generating new ones in 
 
-[my tutorial post] (https://docs.google.com/document/d/1HCa54OhOm9Vm0Jz2AUjQUHK71djzOUQBDZF-9NH7irU/)
+= Setup Guide =
 
-[this document](https://core.telegram.org/bots#6-botfather/ "Obtaining tokens and generating new ones")  
-or follow the info in [this post](https://medium.com/shibinco/create-a-telegram-bot-using-botfather-and-get-the-api-token-900ba00e0f39 "Create a Telegram bot using BotFather and Get the Api Token")  
-You also need at least one "chatid" number, that is the recipient to the message will be send. To know you personal chatid number, search on telegram app for "@get_id_bot" or  
-[click here ](https://telegram.me/chatIDrobot/ "@chatIDrobot")  OR  another bot @RawDataBot [click here ](https://t.me/RawDataBot)  
+A complete step-by-step guide is available here:
+[View the full documentation](https://docs.google.com/document/d/1HCa54OhOm9Vm0Jz2AUjQUHK71djzOUQBDZF-9NH7irU/edit?tab=t.0)
+
+
+
+
+To get your Bot Token, you can refer to one of these resources:
+
+* [Official Telegram documentation](https://core.telegram.org/bots#6-botfather "Obtaining tokens and generating new ones")
+* [Step-by-step guide on Medium](https://medium.com/shibinco/create-a-telegram-bot-using-botfather-and-get-the-api-token-900ba00e0f39 "Create a Telegram bot using BotFather and Get the API Token")
+
+To get your Chat ID, you need at least one recipient ID. You can retrieve it using one of these bots directly in Telegram:
+
+* [@get_id_bot](https://telegram.me/chatIDrobot "@chatIDrobot") — send /start and it will reply with your personal Chat ID
+* [@RawDataBot](https://t.me/RawDataBot) — send any message and it will return your full account info including your ID
+
+For Channel and Group Chatid settings see the [FAQ section](#faq).
 
 
 Once You got the 2 fields save the configuration and try the "TEST" button .. you should receive a message in you telegram : "WOW IT WORKS" !! If not, check token and chatid fields again for the correct values.
@@ -81,6 +94,14 @@ To translate Telegram messages, use WPML or Loco Translate. All notification str
 Go to Loco Translate → Plugins → Notification for Telegram to add your translations.
 For WPML, ensure String Translation is enabled to modify notification texts.
 
+== ACTION HOOK for third-party Plugin == 
+
+Notification for Telegram (version > 3.5.1) exposes a dedicated action hook so any third-party plugin can send messages without calling internal functions directly.
+Basic usage:
+`do_action( 'nftb_send_message', 'Your message here' );`
+
+Look FAQ Section for more esamples.
+
 
 == SHORTCODE EXAMPLE == 
 
@@ -113,7 +134,7 @@ do_shortcode('[telegram_mess  message="'.$date .'" chatids="0000000," token="000
 
 ?>`
 
-** WOOCOMERCE FILTER HOOKS **
+== WOOCOMMERCE FILTER HOOKS ==
 
 We have created 4 filter hooks for WooCommerce order notification message. 4 new positions: Message Header, Message Footer, before Items, and after Items. And we have created a filter through which you can add custom code to product rows, and if you want, you can replace and customize the entire row. :
 
@@ -157,44 +178,37 @@ function my_item_line_function($message ,$product_id, $item) {
 } 
 ?>`
 
-** USER LOGIN HOOKS **
+== USER LOGIN FILTER HOOKS ==
 
 `<?php
-//Filter to add code on user login notification message
-add_filter('nftb_login_notification', 'custom_message_modifier', 10, 1);
+// Triggered on successful user login
+add_filter( 'nftb_login_notification', 'custom_message_modifier', 10, 1 );
 
-//Filter to add code  on user registration notification message
-add_filter('nftb_user_registered_notification', 'custom_message_modifier', 10, 1);
+// Triggered on new user registration
+add_filter( 'nftb_user_registered_notification', 'custom_message_modifier', 10, 1 );
 
-//Filter to add code when existing user fails login notification message
-add_filter('nftb_existing_user_fails_login_notification', 'custom_message_modifier', 10, 1);
+// Triggered when an existing user fails to login
+add_filter( 'nftb_existing_user_fails_login_notification', 'custom_message_modifier', 10, 1 );
 
-//Filter to add code when unknown user fails login notification message
-add_filter('nftb_unknown_user_fails_login_notification', 'custom_message_modifier', 10, 1);
-  
-  
+// Triggered when an unknown user fails to login
+add_filter( 'nftb_unknown_user_fails_login_notification', 'custom_message_modifier', 10, 1 );
 
-// ADD User registration date to notification message
-function custom_message_modifier( $user_id) {
+// Example: append the user registration date to the notification
+function custom_message_modifier( $user_id ) {
+    $user_info = get_userdata( $user_id );
 
-    $user_info = get_userdata($user_id);
-
-    if ($user_info) {
+    if ( $user_info ) {
         $registration_date = $user_info->user_registered;
-        $timestamp = strtotime($registration_date);
-        $locale = 'it_IT'; // Italian locale
-        
-        $formatter = new IntlDateFormatter($locale, IntlDateFormatter::LONG, IntlDateFormatter::LONG, 'UTC');
-        $formatter->setPattern('d MMMM y HH:mm:ss');
-        
-        $formatted_date = $formatter->format($timestamp);
-        $message =  "\r\n\r\nUser gistration Date: " . $formatted_date."\r\n\r\n";
+        $timestamp         = strtotime( $registration_date );
+
+        $formatter = new IntlDateFormatter( 'en_US', IntlDateFormatter::LONG, IntlDateFormatter::LONG, 'UTC' );
+        $formatter->setPattern( 'd MMMM y HH:mm:ss' );
+
+        $formatted_date = $formatter->format( $timestamp );
+        $message = "\r\n\r\nUser Registration Date: " . $formatted_date . "\r\n\r\n";
     } else {
-
-      $message =  "\r\n No info about user ! \r\n " ;
-
+        $message = "\r\nNo info available for this user.\r\n";
     }
-   
 
     return $message;
 }
@@ -202,34 +216,38 @@ function custom_message_modifier( $user_id) {
 
 
 
-before the hooks we introduced 3 function so you can add things in message without changing the plug code 
-We keep them for compatibility but encourage the use of hooks!!
-Position in the order message are:  before items, after items, product_line
+== LEGACY FUNCTIONS (kept for backward compatibility) ==
 
-1) before the product list : (add order ID example)
+Before hooks were introduced, 3 overridable functions allowed message customization without editing plugin code. These are still supported but we encourage migrating to hooks.
 
-	<?php function nftb_order_before_items($order_id){
-    		return "ORDER ID : ".$order_id; 
-		} ?php>
+1) Before the product list — example: prepend the Order ID
 
+`<?php
+function nftb_order_before_items( $order_id ) {
+    return "ORDER ID: " . $order_id;
+}
+?>`
 
-2) after the product list: (add order Currency example)
+2) After the product list — example: append the order currency
 
-	<?php function nftb_order_after_items($order_id){
-	 	$order = wc_get_order( $order_id );
-    		$data = $order->get_data(); // order data
-    		return "Currency: ".$data['currency']; 
-		} ?php>
+`<?php
+function nftb_order_after_items( $order_id ) {
+    $order = wc_get_order( $order_id );
+    $data  = $order->get_data();
+    return "Currency: " . $data['currency'];
+}
+?>`
 
-3) at the end of the line of each individual product of the order: (add product slug example)
+3) At the end of each product line — example: append the product slug
 
-	<?php function nftb_order_product_line($product_id,$item){
-   		 $product = wc_get_product( $product_id );
-    		return " | ".$product->get_slug()." ";
-			} ?php>
+`<?php
+function nftb_order_product_line( $product_id, $item ) {
+    $product = wc_get_product( $product_id );
+    return " | " . $product->get_slug() . " ";
+}
+?>`
 
-
-Suggestions for other Notification, hooks and others plug integrations are Welcome !! 
+Suggestions for new notifications, hooks, and plugin integrations are always welcome!
 
 == Installation ==
 
@@ -244,41 +262,169 @@ e.g.
 
 == Frequently Asked Questions ==
 
-= How to obtain Token? =
+= How do I obtain a Telegram Bot Token? =
 
-When You create a telegram bot you will get a Token. 
-BotFather @botfather is the one bot to rule them all. It will help you create new bots and change settings for existing ones.
+When you create a Telegram bot, BotFather generates a unique token for you. BotFather (@botfather) is the official Telegram bot for creating and managing bots — search for it directly inside Telegram.
 
-search for @botfather
+**Creating a new bot**
 
-Creating a new bot
-Use the /newbot command to create a new bot. The BotFather will ask you for a name and username, then generate an authorization token for your new bot.
+1. Open Telegram and search for @botfather.
+2. Send the command /newbot.
+3. BotFather will ask you for two things:
+   - Name — the display name shown in contact details and conversations (e.g. "My Awesome Bot").
+   - Username — a short unique handle used in mentions and t.me links (e.g. @my_awesome_bot). Usernames must be 5–32 characters long, can only contain Latin letters, numbers and underscores, and must end in "bot".
+4. Once created, BotFather will provide your authorization token.
 
-The name of your bot is displayed in contact details and elsewhere.
+**What does a token look like?**
 
-The Username is a short name, to be used in mentions and t.me links. Usernames are 5-32 characters long and are case insensitive, but may only include Latin characters, numbers, and underscores. Your bot's username must end in 'bot', e.g. 'tetris_bot' or 'TetrisBot'.
+A token is a string in this format:
+110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw
 
-The token is a string along the lines of 110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw that is required to authorize the bot and send requests to the Bot API. Keep your token secure and store it safely, it can be used by anyone to control your bot.
+This token is required to authorize your bot and send requests to the Telegram Bot API. Keep it private — anyone who has it can take full control of your bot.
 
-Generating an authorization token.
-If your existing token is compromised or you lost it for some reason, use the /token command to generate a new one.
+**What if I lose my token or it gets compromised?**
 
-
-
-= How to obtain the chat_id of a private Telegram channel? =
-
-The easiest way is to invite @get_id_bot in your chat and then type:
-
-/my_id @get_id_bot 
+Send the /token command to @botfather, select your bot, and it will generate a new token. The old one will be immediately invalidated.
 
 
-or search in telegram @RawDataBot -> https://t.me/RawDataBot  write something and the bot
-will reply your account info with the id .
+
+= How do I find my personal Telegram Chat ID? =
+
+There are two quick ways:
+
+1. Search for @userinfobot or @get_id_bot on Telegram, send /start and the bot will instantly reply with your numeric user ID (e.g. 29627823).
+2. Search for @RawDataBot (https://t.me/RawDataBot), send any message, and it will reply with your full account info including your ID.
+
+= How do I find the Chat ID of a group? =
+
+1. Add your bot to the group as a member.
+2. Send any message in the group (or type /start@yourbotname).
+3. Open the following URL in your browser, replacing <TOKEN> with your bot token:
+   https://api.telegram.org/bot<TOKEN>/getUpdates
+4. Look for the "chat" object in the JSON response — the "id" field is your group Chat ID. Group IDs are always negative numbers (e.g. -1001234567890).
+
+Note: if the result is empty, make sure you sent a message after adding the bot, then refresh the URL.
+
+= How do I find the Chat ID of a channel? =
+
+1. Add your bot to the channel and assign it Administrator privileges.
+2. Post any message in the channel.
+3. Open the following URL in your browser:
+   https://api.telegram.org/bot<TOKEN>/getUpdates
+4. Find the "chat" object in the JSON — the "id" is your channel Chat ID. Channel IDs always start with -100 (e.g. -1009876543210).
+
+= Is there a universal method that works for users, groups and channels? =
+
+Yes. Add @RawDataBot (https://t.me/RawDataBot) to your group or channel (as admin), or simply message it privately. Send any message and it will reply with a full JSON breakdown of the chat, including the exact Chat ID you need.
+
+= My getUpdates response is empty — what should I do? =
+
+This usually means no messages have been sent to the bot recently. Try the following:
+1. Make sure the bot has been added to the chat.
+2. Send a new message in the chat (or write directly to the bot in a private conversation).
+3. Reload the getUpdates URL in your browser.
+If the response is still empty, check that no other application is consuming the bot updates (e.g. a webhook that is already set — in that case you need to delete it first via /deleteWebhook).
 
 = Can i insert more than one recipient chatid? =
 
 Yes you can add more than one chattid  separated by a comma (,)
 both in option page and in the shortcode.
+
+= Does this plugin support AI agents and MCP? =
+Yes! Starting from version 3.5, this plugin supports the WordPress Abilities API
+and is compatible with MCP (Model Context Protocol), the open standard that allows
+AI agents like Claude, ChatGPT, and others to interact with WordPress autonomously.
+
+= What do I need to enable MCP support? =
+You need to install two additional free plugins:
+* Abilities API — github.com/WordPress/abilities-api/releases
+* MCP Adapter — github.com/WordPress/mcp-adapter/releases
+
+Once both are active, the "Send Telegram Message" ability is automatically
+available to any authorized AI agent. No extra configuration needed.
+
+= How does an AI agent authenticate? =
+Via WordPress Application Passwords — go to Users → Your Profile →
+Application Passwords, create one, and use it in your MCP client configuration.
+Your main password is never exposed.
+
+= What can an AI agent do with this plugin? =
+An authorized AI agent can:
+* Send a Telegram message with custom text
+* Include an optional inline button with label and URL
+* Target a specific Telegram chat ID, overriding the default
+
+= How can I test the MCP integration without an AI? =
+You can test everything for free using curl from your terminal.
+
+First, make sure the plugin is configured and the built-in "Send Test Message"
+button works correctly in the plugin settings.
+
+Then run these commands in order:
+
+Step 1 — Initialize the session and get the Session ID:
+
+curl -X POST "https://YOURSITE.com/wp-json/nftb-telegram/mcp" \
+  -H "Content-Type: application/json" \
+  -u "ADMIN:APP_PASSWORD" \
+  -D - \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+
+Look for the Mcp-Session-Id value in the response headers and copy it.
+
+Step 2 — Verify the tool is available:
+
+curl -X POST "https://YOURSITE.com/wp-json/nftb-telegram/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: YOUR-SESSION-ID" \
+  -u "ADMIN:APP_PASSWORD" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+
+You should see "notification-for-telegram-send-message" in the response.
+
+Step 3 — Send a real Telegram message via MCP:
+
+curl -X POST "https://YOURSITE.com/wp-json/nftb-telegram/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Session-Id: YOUR-SESSION-ID" \
+  -u "ADMIN:APP_PASSWORD" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"notification-for-telegram-send-message","arguments":{"message":"🤖 MCP is working!"}}}'
+
+If the message arrives in your Telegram chat — everything is working correctly.
+
+APP_PASSWORD = a WordPress Application Password (Users → Your Profile → Application Passwords).
+
+= Is MCP support stable? =
+This feature is currently experimental. We welcome feedback and bug reports —
+if you test it, please leave a review or open an issue on the plugin's GitHub page.
+
+= Where can I find the MCP endpoint? =
+Once the required plugins are installed, your MCP endpoint will be available at:
+https://yoursite.com/wp-json/nftb-telegram/mcp
+
+
+= Can I send Telegram messages from my own plugin? =
+Yes! Notification for Telegram exposes a dedicated action hook so any third-party plugin can send messages without calling internal functions directly.
+
+Basic usage:
+`do_action( 'nftb_send_message', 'Your message here' );`
+
+With an inline button link:
+`do_action( 'nftb_send_message', 'New order received!', 'View Order', 'https://yoursite.com/order/123' );`
+
+With a custom Chat ID:
+`do_action( 'nftb_send_message', 'Your message', '', '', '123456789' );`
+
+Parameters:
+1. `$message`  — (string) required — the text to send
+2. `$urlname`  — (string) optional — label of the inline button
+3. `$urllink`  — (string) optional — URL of the inline button
+4. `$chatid`   — (string) optional — override the default Chat ID from settings
+
+Always check the plugin is active before using the hook:
+`if ( is_plugin_active( 'notification-for-telegram/index.php' ) ) {
+    do_action( 'nftb_send_message', 'Hello from my plugin!' );
+}`
 
 
 
@@ -295,6 +441,18 @@ both in option page and in the shortcode.
 9. Hook Position in Login Notification 
 
 == Changelog ==
+= 3.5.1 =
+- WPForms Pro/Elite compatibility — notifications now should work with both Lite and Pro/Elite versions.
+- Security fix: Resolved a stored XSS vulnerability affecting the admin order page by properly escaping Telegram username output and improving input validation.
+- Security fix: Resolved CSRF vulnerability and insufficient authorization on AJAX handlers nftb_cron_action and nftb_cron_action_set.
+- Security fix: Thanx to Nguyen Ba Khanh, Ahmad and Nguyen Xuan Chien.
+- Security fix: Resolved CSRF vulnerability in admin notice dismiss handler by adding nonce verification.
+- Added nftb_send_message action hook to allow third-party plugins to send Telegram messages. 
+- Correct Small typos errors in options page thx @daymobrew
+- Removed: Cron scheduler UI and automatic update notification feature - other plugins do it better!
+- Code Cleaning
+- Fixed CF7 now hides empty fields
+
 = 3.5 =
 - Added: MCP (Model Context Protocol) compatibility
 - Added: WordPress Abilities API integration
