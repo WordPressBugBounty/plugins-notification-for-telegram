@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Notification, mcp, ai
 Requires at least: 4.0
 Tested up to: 6.9.1
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -441,6 +441,10 @@ Always check the plugin is active before using the hook:
 9. Hook Position in Login Notification 
 
 == Changelog ==
+= 3.5.2 =
+- Security: Removed unused file nftncron.php which contained potential authorization bypass vulnerability (file was not loaded by the plugin) 
+
+
 = 3.5.1 =
 - WPForms Pro/Elite compatibility — notifications now should work with both Lite and Pro/Elite versions.
 - Security fix: Resolved a stored XSS vulnerability affecting the admin order page by properly escaping Telegram username output and improving input validation.
