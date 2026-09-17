@@ -177,19 +177,13 @@ class nftb_TelegramNotify
 			?>
 
 			<h2 class="nav-tab-wrapper">
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=telegram_settings"
-					class="telegram-notify-nav-tab <?php echo $active_tab == 'telegram_settings' ? 'nav-tab-active' : ''; ?>">Telegram
-					Config</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=post_settings"
-					class="telegram-notify-nav-tab <?php echo $active_tab == 'post_settings' ? 'nav-tab-active' : ''; ?>">Post /
-					Forms / Users</a>
-				<a href="?page=<?php echo $_GET['page']; ?>&tab=woocommerce"
-					class="telegram-notify-nav-tab <?php echo $active_tab == 'woocommerce' ? 'nav-tab-active' : ''; ?>">Woocomerce</a>
+				<a href="?page=<?php echo esc_attr($_GET['page']); ?>&tab=telegram_settings" class="telegram-notify-nav-tab <?php echo $active_tab == 'telegram_settings' ? 'nav-tab-active' : ''; ?>">Telegram Config</a>
+				<a href="?page=<?php echo esc_attr($_GET['page']); ?>&tab=post_settings" class="telegram-notify-nav-tab <?php echo $active_tab == 'post_settings' ? 'nav-tab-active' : ''; ?>">Post / Forms / Users</a>
+				<a href="?page=<?php echo esc_attr($_GET['page']); ?>&tab=woocommerce" class="telegram-notify-nav-tab <?php echo $active_tab == 'woocommerce' ? 'nav-tab-active' : ''; ?>">Woocomerce</a>
 				<?php if (is_plugin_active('surecart/surecart.php')) { ?>
-					<a href="?page=<?php echo $_GET['page']; ?>&tab=surecart"
-						class="telegram-notify-nav-tab <?php echo $active_tab == 'surecart' ? 'nav-tab-active' : ''; ?>">Surecart</a>
+				<a href="?page=<?php echo esc_attr($_GET['page']); ?>&tab=surecart" class="telegram-notify-nav-tab <?php echo $active_tab == 'surecart' ? 'nav-tab-active' : ''; ?>">Surecart</a>
 				<?php } ?>
-				<!--     <a href="?page=<?php echo $_GET['page']; ?>&tab=security" class="telegram-notify-nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>">Security</a> -->
+				<!-- <a href="?page=<?php echo esc_attr($_GET['page']); ?>&tab=security" class="telegram-notify-nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>">Security</a> -->
 			</h2>
 
 			<form method="post" action="options.php" class="telegram-notify-form">

@@ -3,8 +3,8 @@ Contributors: rainafarai
 Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Notification, mcp, ai
 Requires at least: 4.0
-Tested up to: 6.9.1
-Stable tag: 3.5.2
+Tested up to: 7.1
+Stable tag: 3.5.3
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,10 +84,17 @@ authorized AI agent can automatically discover and use the
 * Add an inline button with label and URL
 * Override the default chat ID
 
-= Requirements for MCP =
-* WordPress 6.9+
-* Plugin: Abilities API (WordPress/abilities-api)
-* Plugin: MCP Adapter (WordPress/mcp-adapter)
+Requirements for MCP
+
+WordPress 7.0+ (Abilities API built-in)
+Plugin: MCP Adapter
+Enable "AI / MCP" in the plugin settings
+
+WordPress 6.9 compatibility
+
+WordPress 6.9+
+Plugin: Abilities API
+Plugin: MCP Adapter
 
 == MESSAGES TRANSLATION == 
 To translate Telegram messages, use WPML or Loco Translate. All notification strings are now translatable.
@@ -441,6 +448,11 @@ Always check the plugin is active before using the hook:
 9. Hook Position in Login Notification 
 
 == Changelog ==
+ = 3.5.3 =
+- CF7 Telegram notifications now display the form title and ID alongside the submitter's name, improving traceability when several contact forms are in use.
+- Security Fix: Reflected XSS via unescaped $_GET['page'] in tab navigation (reported by Patchstack thx Ananda Dhakal !)
+- Fixed: CF7 notifications no longer include internal fields from third-party extensions (fields starting with _ are now automatically excluded) - thanks to @schulz for reporting
+
 = 3.5.2 =
 - Security: Removed unused file nftncron.php which contained potential authorization bypass vulnerability (file was not loaded by the plugin) 
 
