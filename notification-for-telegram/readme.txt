@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/rainafarai
 Tags: Telegram, Woocommerce ,Notification, mcp, ai
 Requires at least: 4.0
 Tested up to: 7.1
-Stable tag: 3.5.3
+Stable tag: 3.5.5
 Requires PHP: 7.4 
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,11 +17,11 @@ This plugin is useful for monitoring critical events on your site, such as new c
 
 Receive Telegram messages notification when:  
 
-
 * When receive a new order in Woocommerce.
 * When a Woocommerce order change status.
 * When receive a new order in Surecart. 
 * Every event captured by WP Activity Log plugin
+* You can also send messages directly from the shell using WP-CLI with  'wp telegram send "Backup complete"'
 * New field in Woocommerce checkout page let customers add the own telegram nickname
 * Low Stock Product notifications when a product is low stock conditions.
 * Shows Telegram Nick link in admin order details page when present
@@ -44,11 +44,10 @@ You can learn about obtaining  tokens and generating new ones in
 
 = Setup Guide =
 
+* Setup Wizard: a guided 3-step popup appears automatically on first install to help you configure your Telegram bot token and Chat ID
+
 A complete step-by-step guide is available here:
 [View the full documentation](https://docs.google.com/document/d/1HCa54OhOm9Vm0Jz2AUjQUHK71djzOUQBDZF-9NH7irU/edit?tab=t.0)
-
-
-
 
 To get your Bot Token, you can refer to one of these resources:
 
@@ -96,163 +95,26 @@ WordPress 6.9+
 Plugin: Abilities API
 Plugin: MCP Adapter
 
+== WP-CLI support ==
+Send Telegram messages directly from the shell using wp nftb send
+**wp telegram send "Hide WORLD"**
+
 == MESSAGES TRANSLATION == 
 To translate Telegram messages, use WPML or Loco Translate. All notification strings are now translatable.
 Go to Loco Translate → Plugins → Notification for Telegram to add your translations.
 For WPML, ensure String Translation is enabled to modify notification texts.
 
 == ACTION HOOK for third-party Plugin == 
-
 Notification for Telegram (version > 3.5.1) exposes a dedicated action hook so any third-party plugin can send messages without calling internal functions directly.
 Basic usage:
 `do_action( 'nftb_send_message', 'Your message here' );`
 
 Look FAQ Section for more esamples.
 
-
 == SHORTCODE EXAMPLE == 
-
 `[telegram_mess  message="Im so happy" chatids="0000000," token="000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" showsitename="1" showip="1" showcity="1" ]`
+Look FAQ Section for more esamples.
 
-
-SHORTCODE OPTIONS:
-
-* message : Your message to be sent. Example (message="hello world")
-
-* chatids : Recipient(s) who will receive your message separated by comma (example chatids="0000000,11111111") , If not present this field  the shortcode will use default value in Plugin option page.
-
-* token:  The token looks something like 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11 
-If not present this field, the shortcode will use default value in Plugin option page.
-
-* showsitename: if set to "1" appends sitename after the message. Defaultvalue is "0" Example (showsitename="1")
-
-* showip: if set to "1" appends user ip address after the message. Default value is "0" Example (showip="1")
-
-* showcity: if set to "1" appends user city name after the message. Default value is "0" Example (showcity="1")
-
-
-USE SHORTCODE IN YOU PHP CODE
-
-`<?php
-
-$date = date("d-m-Y");
-
-do_shortcode('[telegram_mess  message="'.$date .'" chatids="0000000," token="000000000:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" showsitename="1" showip="1" showcity="1" ]'); 
-
-?>`
-
-== WOOCOMMERCE FILTER HOOKS ==
-
-We have created 4 filter hooks for WooCommerce order notification message. 4 new positions: Message Header, Message Footer, before Items, and after Items. And we have created a filter through which you can add custom code to product rows, and if you want, you can replace and customize the entire row. :
-
-4 new Positions and code axample ( echo payment_status in the 4 positions)
-
-`<?php
-add_filter('nftb_order_header_message_hook', 'my_filter_function', 10, 1); 
-add_filter('nftb_order_before_items_hook', 'my_filter_function', 10, 1);
-add_filter('nftb_order_after_items_hook', 'my_filter_function', 10, 1);
-add_filter('nftb_order_footer_message_hook', 'my_filter_function', 10, 1);
-
-function my_filter_function($order_id) {
-  $order = wc_get_order($order_id);
-  if ($order) {
-      // Get order details
-      $order_data = $order->get_data();
-  
-      // Extract specific order information
-      
-      $payment_status = $order->get_status();
-      $payment_method = $order->get_payment_method();  
-  }
-  return  "\r\n\r\n".$payment_method."(".$payment_status.")\r\n" ;
-}
-?>`
-
-Product rows Filter with 2 different behaviors ADD or REPLACE LINE 
-
-`<?php
-add_filter('nftb_order_product_line_hook', 'my_item_line_function', 10, 3);
-
-function my_item_line_function($message ,$product_id, $item) {
-
-    // ADD SOME CODE $product_id TO ORIGINAL row $message.
-    $modified_data = $message. "->".$product_id. "\r\n";
-
-    // REPLACE Product ITEM LINE CODE WITH YOUR CODE  without concatenate $message.
-    $modified_data = $product_id. "\r\n";
-
-    return $modified_data;
-} 
-?>`
-
-== USER LOGIN FILTER HOOKS ==
-
-`<?php
-// Triggered on successful user login
-add_filter( 'nftb_login_notification', 'custom_message_modifier', 10, 1 );
-
-// Triggered on new user registration
-add_filter( 'nftb_user_registered_notification', 'custom_message_modifier', 10, 1 );
-
-// Triggered when an existing user fails to login
-add_filter( 'nftb_existing_user_fails_login_notification', 'custom_message_modifier', 10, 1 );
-
-// Triggered when an unknown user fails to login
-add_filter( 'nftb_unknown_user_fails_login_notification', 'custom_message_modifier', 10, 1 );
-
-// Example: append the user registration date to the notification
-function custom_message_modifier( $user_id ) {
-    $user_info = get_userdata( $user_id );
-
-    if ( $user_info ) {
-        $registration_date = $user_info->user_registered;
-        $timestamp         = strtotime( $registration_date );
-
-        $formatter = new IntlDateFormatter( 'en_US', IntlDateFormatter::LONG, IntlDateFormatter::LONG, 'UTC' );
-        $formatter->setPattern( 'd MMMM y HH:mm:ss' );
-
-        $formatted_date = $formatter->format( $timestamp );
-        $message = "\r\n\r\nUser Registration Date: " . $formatted_date . "\r\n\r\n";
-    } else {
-        $message = "\r\nNo info available for this user.\r\n";
-    }
-
-    return $message;
-}
-?>`
-
-
-
-== LEGACY FUNCTIONS (kept for backward compatibility) ==
-
-Before hooks were introduced, 3 overridable functions allowed message customization without editing plugin code. These are still supported but we encourage migrating to hooks.
-
-1) Before the product list — example: prepend the Order ID
-
-`<?php
-function nftb_order_before_items( $order_id ) {
-    return "ORDER ID: " . $order_id;
-}
-?>`
-
-2) After the product list — example: append the order currency
-
-`<?php
-function nftb_order_after_items( $order_id ) {
-    $order = wc_get_order( $order_id );
-    $data  = $order->get_data();
-    return "Currency: " . $data['currency'];
-}
-?>`
-
-3) At the end of each product line — example: append the product slug
-
-`<?php
-function nftb_order_product_line( $product_id, $item ) {
-    $product = wc_get_product( $product_id );
-    return " | " . $product->get_slug() . " ";
-}
-?>`
 
 Suggestions for new notifications, hooks, and plugin integrations are always welcome!
 
@@ -296,7 +158,6 @@ Send the /token command to @botfather, select your bot, and it will generate a n
 
 
 = How do I find my personal Telegram Chat ID? =
-
 There are two quick ways:
 
 1. Search for @userinfobot or @get_id_bot on Telegram, send /start and the bot will instantly reply with your numeric user ID (e.g. 29627823).
@@ -336,6 +197,48 @@ If the response is still empty, check that no other application is consuming the
 
 Yes you can add more than one chattid  separated by a comma (,)
 both in option page and in the shortcode.
+
+= Can I send Telegram messages from the command line? =
+Yes! The plugin includes WP-CLI support. Once WP-CLI is installed on your server you can use the wp telegram command.
+
+Send a simple message:
+**wp telegram send "Backup complete"**
+
+Send to a specific chat ID (overrides plugin settings):
+**wp telegram send "Hello" --chatid=123456789**
+
+Send the output of a shell command:
+**wp telegram send "$(df -h)"**
+
+Pipe any command output:
+**df -h | wp telegram send -**
+
+Send a message with an inline button:
+**wp telegram send "Deploy done" --urlname="Open site" --urllink="https://yoursite.com"**
+
+Test the connection:
+**wp telegram test**
+
+Show current plugin configuration:
+**wp telegram status**
+
+Send a plugin update report to Telegram:
+**wp telegram report_updates**
+
+Send a WordPress core update report to Telegram:
+**wp telegram report_core**
+
+Show all available commands:
+**wp telegram help**
+
+= Can I schedule Telegram reports via system cron? =
+Yes! This is more reliable than WP-Cron. Add these lines to your crontab (crontab -e):
+
+`# Send plugin update report every day at 8am
+0 8 * * * cd /var/www/html && wp telegram report_updates --allow-root
+
+# Send WordPress core update report every day at 9am
+0 9 * * * cd /var/www/html && wp telegram report_core --allow-root`
 
 = Does this plugin support AI agents and MCP? =
 Yes! Starting from version 3.5, this plugin supports the WordPress Abilities API
@@ -409,6 +312,128 @@ if you test it, please leave a review or open an issue on the plugin's GitHub pa
 Once the required plugins are installed, your MCP endpoint will be available at:
 https://yoursite.com/wp-json/nftb-telegram/mcp
 
+= Does the plugin support shortcodes? =
+Yes! You can use the [telegram_mess] shortcode to send Telegram messages directly from your pages, posts or PHP code.
+
+Available parameters:
+
+* message — The message to send. Example: message="hello world"
+* chatids — Recipient(s) separated by comma. Example: chatids="000000,111111". If omitted, uses the default chat ID from plugin settings.
+* token — Your Telegram bot token. Example: token="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11". If omitted, uses the default token from plugin settings.
+* showsitename — If set to "1" appends the site name to the message. Default: "0". Example: showsitename="1"
+* showip — If set to "1" appends the user IP address to the message. Default: "0". Example: showip="1"
+* showcity — If set to "1" appends the user city name to the message. Default: "0". Example: showcity="1"
+
+Basic usage in a page or post:
+`[telegram_mess message="hello world"]`
+
+Full example with all parameters:
+`[telegram_mess message="hello world" chatids="000000,111111" token="123456:ABC-DEF" showsitename="1" showip="1" showcity="1"]`
+
+= Can I use the shortcode in PHP code? =
+Yes! Use do_shortcode() to call it from your theme or plugin:
+
+`<?php
+$date = date("d-m-Y");
+do_shortcode('[telegram_mess message="' . $date . '" chatids="0000000" token="000000000:AAAAAAAAAA" showsitename="1" showip="1" showcity="1"]');
+?>`
+
+= Does the plugin support WooCommerce order notification customization? =
+Yes! The plugin provides 4 filter hooks to customize the WooCommerce order notification message. You can add custom content in 4 positions: Header, Before Items, After Items, and Footer.
+
+`<?php
+add_filter('nftb_order_header_message_hook', 'my_filter_function', 10, 1);
+add_filter('nftb_order_before_items_hook', 'my_filter_function', 10, 1);
+add_filter('nftb_order_after_items_hook', 'my_filter_function', 10, 1);
+add_filter('nftb_order_footer_message_hook', 'my_filter_function', 10, 1);
+
+function my_filter_function($order_id) {
+  $order = wc_get_order($order_id);
+  if ($order) {
+      $payment_status = $order->get_status();
+      $payment_method = $order->get_payment_method();
+  }
+  return "\r\n\r\n".$payment_method."(".$payment_status.")\r\n";
+}
+?>`
+
+= Can I customize the product line in the order notification? =
+Yes! Use the nftb_order_product_line_hook filter. You can either add content to the existing line or completely replace it.
+
+`<?php
+add_filter('nftb_order_product_line_hook', 'my_item_line_function', 10, 3);
+
+function my_item_line_function($message, $product_id, $item) {
+
+    // ADD content to the original line
+    $modified_data = $message . "->" . $product_id . "\r\n";
+
+    // OR REPLACE the entire line
+    $modified_data = $product_id . "\r\n";
+
+    return $modified_data;
+}
+?>`
+
+= Can I customize the login and user registration notifications? =
+Yes! The plugin provides 4 filter hooks for login and registration events.
+
+`<?php
+// Triggered on successful user login
+add_filter('nftb_login_notification', 'custom_message_modifier', 10, 1);
+
+// Triggered on new user registration
+add_filter('nftb_user_registered_notification', 'custom_message_modifier', 10, 1);
+
+// Triggered when an existing user fails to login
+add_filter('nftb_existing_user_fails_login_notification', 'custom_message_modifier', 10, 1);
+
+// Triggered when an unknown user fails to login
+add_filter('nftb_unknown_user_fails_login_notification', 'custom_message_modifier', 10, 1);
+
+// Example: append the user registration date to the notification
+function custom_message_modifier($user_id) {
+    $user_info = get_userdata($user_id);
+    if ($user_info) {
+        $registration_date = $user_info->user_registered;
+        $timestamp = strtotime($registration_date);
+        $formatter = new IntlDateFormatter('en_US', IntlDateFormatter::LONG, IntlDateFormatter::LONG, 'UTC');
+        $formatter->setPattern('d MMMM y HH:mm:ss');
+        $message = "\r\n\r\nUser Registration Date: " . $formatter->format($timestamp) . "\r\n\r\n";
+    } else {
+        $message = "\r\nNo info available for this user.\r\n";
+    }
+    return $message;
+}
+?>`
+
+= Are there legacy functions for backward compatibility? =
+Yes. Before hooks were introduced, 3 overridable functions allowed message customization. These are still supported but we encourage migrating to hooks.
+
+1) Before the product list:
+`<?php
+function nftb_order_before_items($order_id) {
+    return "ORDER ID: " . $order_id;
+}
+?>`
+
+2) After the product list:
+`<?php
+function nftb_order_after_items($order_id) {
+    $order = wc_get_order($order_id);
+    $data = $order->get_data();
+    return "Currency: " . $data['currency'];
+}
+?>`
+
+3) At the end of each product line:
+`<?php
+function nftb_order_product_line($product_id, $item) {
+    $product = wc_get_product($product_id);
+    return " | " . $product->get_slug() . " ";
+}
+?>`
+
 
 = Can I send Telegram messages from my own plugin? =
 Yes! Notification for Telegram exposes a dedicated action hook so any third-party plugin can send messages without calling internal functions directly.
@@ -434,6 +459,10 @@ Always check the plugin is active before using the hook:
 }`
 
 
+= Does the plugin help me set up the bot for the first time? =
+Yes! If no token is configured, a setup wizard popup appears automatically when you open the plugin settings. 
+It guides you through 3 steps: creating a bot with @BotFather, getting your Chat ID via @chatIDrobot, and sending a test message to verify the connection. 
+You can close the wizard at any time and configure the settings manually instead.
 
 == Screenshots == 
 
@@ -448,6 +477,11 @@ Always check the plugin is active before using the hook:
 9. Hook Position in Login Notification 
 
 == Changelog ==
+ = 3.5.5 =
+- Added: Settings **Export / Import feature** - backup and restore all plugin settings as a JSON file directly from the Telegram Config tab
+- Added: WP-CLI support - send Telegram messages from the **shell** with **wp telegram send**
+- Added: **Setup Wizard** - a guided popup helps new users configure the Telegram bot token and Chat ID on first install
+
  = 3.5.3 =
 - CF7 Telegram notifications now display the form title and ID alongside the submitter's name, improving traceability when several contact forms are in use.
 - Security Fix: Reflected XSS via unescaped $_GET['page'] in tab navigation (reported by Patchstack thx Ananda Dhakal !)
@@ -458,7 +492,7 @@ Always check the plugin is active before using the hook:
 
 
 = 3.5.1 =
-- WPForms Pro/Elite compatibility — notifications now should work with both Lite and Pro/Elite versions.
+- WPForms Pro/Elite compatibility - notifications now should work with both Lite and Pro/Elite versions.
 - Security fix: Resolved a stored XSS vulnerability affecting the admin order page by properly escaping Telegram username output and improving input validation.
 - Security fix: Resolved CSRF vulnerability and insufficient authorization on AJAX handlers nftb_cron_action and nftb_cron_action_set.
 - Security fix: Thanx to Nguyen Ba Khanh, Ahmad and Nguyen Xuan Chien.

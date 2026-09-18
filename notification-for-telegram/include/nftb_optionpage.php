@@ -191,20 +191,23 @@ class nftb_TelegramNotify
 				if ($active_tab == 'telegram_settings') {
 					settings_fields('telegram_notify_option_group_tab1');
 					do_settings_sections('telegram-notify-admin_tab1');
-					submit_button('Save Settings', 'telegram-notify-button');
+					submit_button('Save Settings', 'button-secondary');
+					echo '</form>';
+					$this->backup_restore_callback();
+					echo '<form style="display:none">'; // evita errore HTML per il </form> che WP aggiunge dopo
 				} elseif ($active_tab == 'post_settings') {
 					settings_fields('telegram_notify_option_group_tab2');
 					do_settings_sections('telegram-notify-admin_tab2');
-					submit_button('Save Settings', 'telegram-notify-button');
+					submit_button('Save Settings', 'button-secondary');
 				} elseif ($active_tab == 'woocommerce') {
 					settings_fields('telegram_notify_option_group_tab3');
 					do_settings_sections('telegram-notify-admin_tab3');
-					submit_button('Save Settings', 'telegram-notify-button');
+					submit_button('Save Settings', 'button-secondary');
 					
 				} elseif ($active_tab == 'surecart') {
 					settings_fields('telegram_notify_option_group_tab5');
 					do_settings_sections('telegram-notify-admin_tab5');
-					submit_button('Save Settings', 'telegram-notify-button');
+					submit_button('Save Settings', 'button-secondary');
 				}
 				?>
 			</form>
@@ -292,6 +295,7 @@ class nftb_TelegramNotify
 			'telegram-notify-admin_tab1', // page
 			'telegram_notify_setting_section_tab1' // section
 		);
+
 
 
 
@@ -1187,6 +1191,50 @@ class nftb_TelegramNotify
 		);
 	}
 
+// Import Export 
+	public function backup_restore_callback()
+{
+    $export_nonce = wp_create_nonce('nftb_export_action');
+    $import_nonce = wp_create_nonce('nftb_import_action');
+    ?>
+  
+<hr>
+    <div style="display:flex; gap:20px; align-items:stretch; flex-wrap:wrap; margin-top:30px;margin-left:50px;">
+
+        <!-- EXPORT -->
+        <div style="background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:16px 20px; min-width:220px;">
+            <strong style="display:block; margin-bottom:8px;">⬇️ <?php _e('Export Settings', 'notification-for-telegram'); ?></strong>
+            <p class="description" style="margin-bottom:12px;"><?php _e('Download all plugin settings as a JSON file.', 'notification-for-telegram'); ?></p>
+            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                <input type="hidden" name="action" value="nftb_export_settings">
+                <input type="hidden" name="nftb_export_nonce" value="<?php echo esc_attr($export_nonce); ?>">
+                <button type="submit" class="button button-secondary"><?php _e('Export', 'notification-for-telegram'); ?></button>
+            </form>
+        </div>
+
+       <!-- IMPORT -->
+<div style="background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:16px 20px; min-width:220px;">
+    <strong style="display:block; margin-bottom:8px;">⬆️ <?php _e('Import Settings', 'notification-for-telegram'); ?></strong>
+    <p class="description" style="margin-bottom:12px;"><?php _e('Upload a previously exported JSON backup to restore settings.', 'notification-for-telegram'); ?></p>
+    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
+        <input type="hidden" name="action" value="nftb_import_settings">
+        <input type="hidden" name="nftb_import_nonce" value="<?php echo esc_attr($import_nonce); ?>">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input type="file" name="nftb_import_file" accept=".json" id="nftb_import_file" style="display:none;" onchange="
+                document.getElementById('nftb_file_label').innerText = this.files[0].name;
+                document.getElementById('nftb_import_submit').style.display = 'inline-block';
+            ">
+            <button type="button" class="button button-secondary" onclick="document.getElementById('nftb_import_file').click();">📁 <?php _e('Select file', 'notification-for-telegram'); ?></button>
+            <span id="nftb_file_label" style="color:#666; font-style:italic;"><?php _e('No file selected', 'notification-for-telegram'); ?></span>
+            <button type="submit" id="nftb_import_submit" class="button button-secondary" style="display:none;">⬆️ <?php _e('Import', 'notification-for-telegram'); ?></button>
+        </div>
+    </form>
+</div>
+
+    </div>
+  
+    <?php
+}
 
 	//TAB 2
 
